@@ -1,0 +1,3 @@
+asset_id,asset_name,location,category,manufacturer,model,serial_number,installed_date
+1,Pump A,Plant 1,Pump,ACME,PA-100,SN-001,2024-01-15
+2,Motor B,Plant 1,Motor,ACME,MB-200,SN-002,2024-02-10

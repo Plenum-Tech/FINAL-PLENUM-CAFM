@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:28.182Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "artifacts": [
+      {
+        "filename": "ae5e7477-1f30-42a9-90c0-893b0be68072_output.csv",
+        "file_type": "csv",
+        "size_bytes": 213,
+        "download_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.csv"
+      },
+      {
+        "filename": "ae5e7477-1f30-42a9-90c0-893b0be68072_output.json",
+        "file_type": "json",
+        "size_bytes": 17,
+        "download_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.json"
+      },
+      {
+        "filename": "ae5e7477-1f30-42a9-90c0-893b0be68072_output.sql",
+        "file_type": "sql",
+        "size_bytes": 726,
+        "download_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.sql"
+      }
+    ]
+  }
+}

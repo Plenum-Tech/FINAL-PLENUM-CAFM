@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:27.783Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "hierarchies_approved": 0,
+    "cycles_resolved": 0,
+    "hierarchy_confirmed": true,
+    "confirmed_hierarchies": [],
+    "containment_hierarchy": {},
+    "el_m7_passed": true,
+    "error_message": null,
+    "duration_ms": 0.3,
+    "execution_logs": [
+      "[Node 7] Hierarchy verification: migration=ae5e7477-1f30-42a9-90c0-893b0be68072",
+      "[Node 7] Approved 0 hierarchies",
+      "[Node 7] Resolved 0 cycles"
+    ]
+  }
+}

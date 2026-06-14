@@ -1,0 +1,6 @@
+wo_id,asset_id,wo_title,priority,status,created_date,due_date,technician,notes
+WO-9001,A-1001,Pump leakage,High,Open,2024-01-02,2024-01-05,Ali,Seal replacement recommended
+WO-9002,A-1002,Noise issue,Medium,In Progress,2024-01-03,2024-01-06,Sara,Bearing check scheduled
+WO-9003,A-1004,Compressor service,High,Open,2024-01-04,2024-02-01,Omar,Oil leak investigation
+WO-9004,A-1012,Safety inspection,High,Open,2024-01-05,2024-01-20,Noor,Regulatory compliance check
+WO-9005,A-1007,Chiller temp drift,Medium,Open,2024-01-06,2024-01-15,Fatima,Sensor calibration

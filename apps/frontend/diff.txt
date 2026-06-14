@@ -1,0 +1,1785 @@
+diff --git a/src/app/(app)/ai/ai-chat-client.tsx b/src/app/(app)/ai/ai-chat-client.tsx
+index b9777a2..99517ce 100644
+--- a/src/app/(app)/ai/ai-chat-client.tsx
++++ b/src/app/(app)/ai/ai-chat-client.tsx
+@@ -1,17 +1,18 @@
+ "use client";
+ 
+ import { useEffect, useMemo, useRef, useState } from "react";
++import { createPortal } from "react-dom";
+ import {
+   AlertTriangle,
+   CheckCircle2,
+   ChevronRight,
+-  Folder,
+-  History,
++  Database,
++  FileText,
+   Loader2,
+-  MessageSquare,
+   MoreHorizontal,
+   Paperclip,
+   Plus,
++  Plug,
+   Send,
+   Share2,
+   User,
+@@ -31,6 +32,9 @@ import {
+   useSchemaMapperTestingVerifyHierarchyNode7,
+   useSchemaMapperTestingGenerateOutputNode8,
+   useSchemaMapperTestingWriteOutputNode9,
++  useSchemaMapperTestConnectionWithCredentials,
++  type FiixCredentials,
++  type FiixPlatform,
+   type Node4HumanReviewResponse,
+   type Node5PreprocessResponse,
+   type Node6ResolveHierarchyResponse,
+@@ -764,10 +768,26 @@ export function AiChatClient() {
+   const [input, setInput] = useState("");
+   const [pending, setPending] = useState(false);
+   const [platform, setPlatform] = useState<"flix" | "marmot">("flix");
++  const [cmmsPlatform, setCmmsPlatform] = useState<FiixPlatform>("fiix");
++  const [cmmsDialogOpen, setCmmsDialogOpen] = useState(false);
++  const [cmmsCreds, setCmmsCreds] = useState<FiixCredentials>({ app_key: "", access_key: "", secret: "" });
++  const [cmmsTestResult, setCmmsTestResult] = useState<unknown | null>(null);
++  const [cmmsTestError, setCmmsTestError] = useState<string | null>(null);
+   const [testing, setTesting] = useState(false);
++  const [mounted, setMounted] = useState(false);
+   const [ingesting, setIngesting] = useState(false);
+   const [fileOpen, setFileOpen] = useState(false);
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
++  
++  // File Ingestion Wizard State
++  const [wizardOpen, setWizardOpen] = useState(false);
++  const [wizardStep, setWizardStep] = useState(1);
++  const [wizardData, setWizardData] = useState<{
++    fileType: string;
++    cleanliness: string;
++    description: string;
++  }>({ fileType: "", cleanliness: "", description: "" });
++
+   const [ingestResponse, setIngestResponse] = useState<unknown | null>(null);
+   const [ingestError, setIngestError] = useState<string | null>(null);
+   const [ingestStartedAt, setIngestStartedAt] = useState<number | null>(null);
+@@ -775,6 +795,20 @@ export function AiChatClient() {
+   const [node4Response, setNode4Response] = useState<Node4HumanReviewResponse | null>(null);
+   const [node4Error, setNode4Error] = useState<string | null>(null);
+   const [node4MigrationId, setNode4MigrationId] = useState<string | null>(null);
++  const [node4Draft, setNode4Draft] = useState<{
++    migrationId: string;
++    tier1Mappings: unknown[];
++    tier2FlaggedMappings: unknown[];
++    tier2Unmappable: unknown[];
++  } | null>(null);
++  const [node4Decisions, setNode4Decisions] = useState<Record<string, boolean | null>>({});
++  const [stepDecisions, setStepDecisions] = useState<{
++    node5: boolean | null;
++    node6: boolean | null;
++    node7: boolean | null;
++    node8: boolean | null;
++    node9: boolean | null;
++  }>({ node5: null, node6: null, node7: null, node8: null, node9: null });
+   const [node5Response, setNode5Response] = useState<Node5PreprocessResponse | null>(null);
+   const [node5Error, setNode5Error] = useState<string | null>(null);
+   const [, setNode5MigrationId] = useState<string | null>(null);
+@@ -793,14 +827,119 @@ export function AiChatClient() {
+   const [node9Response, setNode9Response] = useState<Node9WriteOutputResponse | null>(null);
+   const [node9Error, setNode9Error] = useState<string | null>(null);
+   const [, setNode9MigrationId] = useState<string | null>(null);
++ 
++  type ActionTemplate = "csv" | "pdf" | "cmms" | "db";
++  type RecentActionStatus = "draft" | "running" | "needs_approval" | "done" | "failed";
++  type RecentAction = {
++    id: string;
++    title: string;
++    template: ActionTemplate;
++    createdAt: number;
++    status: RecentActionStatus;
++    migrationId?: string;
++    fileName?: string;
++  };
++
+   const [centerTab, setCenterTab] = useState<
+-    "overview" | "tables" | "mappings" | "review" | "preprocess" | "hierarchy" | "verify" | "output" | "logs"
+-  >("overview");
++    "flow" | "overview" | "tables" | "mappings" | "review" | "preprocess" | "hierarchy" | "verify" | "output" | "logs"
++  >("flow");
++
++  const [actionTemplate, setActionTemplate] = useState<ActionTemplate>("csv");
++  const [recentActions, setRecentActions] = useState<RecentAction[]>(() => []);
++  const [activeActionId, setActiveActionId] = useState<string | null>(null);
++
++  useEffect(() => {
++    try {
++      const raw = localStorage.getItem("ai_recent_actions_v1");
++      if (!raw) return;
++      const parsed = JSON.parse(raw);
++      if (!Array.isArray(parsed)) return;
++      const cleaned: RecentAction[] = parsed
++        .map((x) => asRecord(x))
++        .filter((x): x is Record<string, unknown> => !!x)
++        .map((x) => ({
++          id: readString(x.id) ?? crypto.randomUUID(),
++          title: readString(x.title) ?? "Untitled",
++          template: (readString(x.template) as ActionTemplate) ?? "csv",
++          createdAt: readNumber(x.createdAt) ?? Date.now(),
++          status: (readString(x.status) as RecentActionStatus) ?? "draft",
++          migrationId: readString(x.migrationId) ?? undefined,
++          fileName: readString(x.fileName) ?? undefined,
++        }))
++        .slice(0, 30);
++      setRecentActions(cleaned);
++    } catch {}
++  }, []);
++
++  useEffect(() => {
++    try {
++      localStorage.setItem("ai_recent_actions_v1", JSON.stringify(recentActions.slice(0, 30)));
++    } catch {}
++  }, [recentActions]);
++
++  const updateRecentAction = (id: string, patch: Partial<RecentAction>) => {
++    setRecentActions((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch } : a)));
++  };
++
++  const createRecentAction = (input: { template: ActionTemplate; title: string; fileName?: string }) => {
++    const id = crypto.randomUUID();
++    const action: RecentAction = {
++      id,
++      template: input.template,
++      title: input.title,
++      fileName: input.fileName,
++      createdAt: Date.now(),
++      status: "running",
++    };
++    setActiveActionId(id);
++    setRecentActions((prev) => [action, ...prev].slice(0, 30));
++    return id;
++  };
++
++  const resetActionState = () => {
++    setSelectedFile(null);
++    setIngesting(false);
++    setIngestStartedAt(null);
++    setIngestEndedAt(null);
++    setIngestResponse(null);
++    setIngestError(null);
++    setNode4Response(null);
++    setNode4Error(null);
++    setNode4MigrationId(null);
++    setNode4Draft(null);
++    setNode4Decisions({});
++    setStepDecisions({ node5: null, node6: null, node7: null, node8: null, node9: null });
++    setNode5Response(null);
++    setNode5Error(null);
++    setNode5MigrationId(null);
++    setNode6Response(null);
++    setNode6Error(null);
++    setNode6MigrationId(null);
++    setNode7Response(null);
++    setNode7Error(null);
++    setNode7MigrationId(null);
++    setNode8Response(null);
++    setNode8Error(null);
++    setNode8MigrationId(null);
++    setNode8Artifacts(null);
++    setNode8ArtifactsError(null);
++    setNode8ArtifactsLoading(false);
++    setNode9Response(null);
++    setNode9Error(null);
++    setNode9MigrationId(null);
++    setMessages([]);
++    setInput("");
++    setPending(false);
++    setActiveActionId(null);
++    setCenterTab("flow");
++  };
++
+ 
+   const centerScrollRef = useRef<HTMLDivElement | null>(null);
+   const inputRef = useRef<HTMLInputElement | null>(null);
+ 
+   const canSend = useMemo(() => input.trim().length > 0 && !pending, [input, pending]);
++  const cmmsTestMutation = useSchemaMapperTestConnectionWithCredentials();
+   const node4Mutation = useSchemaMapperTestingHumanReviewNode4();
+   const node5Mutation = useSchemaMapperTestingPreprocessNode5();
+   const node6Mutation = useSchemaMapperTestingResolveHierarchyNode6();
+@@ -808,6 +947,125 @@ export function AiChatClient() {
+   const node8Mutation = useSchemaMapperTestingGenerateOutputNode8();
+   const node9Mutation = useSchemaMapperTestingWriteOutputNode9();
+ 
++  const node4FlaggedGroups = useMemo(() => {
++    const items = node4Draft?.tier2FlaggedMappings ?? [];
++    const groups = new Map<string, { sourceField: string; bestTarget: string | null; bestConfidence: number | null; candidates: unknown[] }>();
++
++    for (const raw of items) {
++      const rec = asRecord(raw);
++      if (!rec) continue;
++      const sourceField =
++        readString(rec.source_field) ??
++        readString(rec.sourceField) ??
++        readString(rec.column) ??
++        readString(rec.source) ??
++        null;
++      if (!sourceField) continue;
++      const targetField =
++        readString(rec.target_field) ??
++        readString(rec.targetField) ??
++        readString(rec.suggested_target_field) ??
++        readString(rec.suggestedTargetField) ??
++        null;
++      const confidence =
++        readNumber(rec.confidence) ??
++        readNumber(rec.score) ??
++        readNumber(rec.similarity) ??
++        null;
++
++      const g = groups.get(sourceField) ?? { sourceField, bestTarget: null, bestConfidence: null, candidates: [] };
++      g.candidates.push(raw);
++      const isBetter =
++        typeof confidence === "number" &&
++        (typeof g.bestConfidence !== "number" || confidence > g.bestConfidence);
++      if (isBetter) {
++        g.bestConfidence = confidence;
++        g.bestTarget = targetField;
++      } else if (!g.bestTarget && targetField) {
++        g.bestTarget = targetField;
++      }
++      groups.set(sourceField, g);
++    }
++
++    return Array.from(groups.values()).sort((a, b) => a.sourceField.localeCompare(b.sourceField));
++  }, [node4Draft?.tier2FlaggedMappings]);
++
++  const node4AllReviewed = useMemo(() => {
++    if (!node4FlaggedGroups.length) return true;
++    for (const g of node4FlaggedGroups) {
++      if (node4Decisions[g.sourceField] == null) return false;
++    }
++    return true;
++  }, [node4FlaggedGroups, node4Decisions]);
++
++  const setStepDecision = (key: "node5" | "node6" | "node7" | "node8" | "node9", value: boolean) => {
++    setStepDecisions((prev) => ({ ...prev, [key]: value }));
++  };
++
++  const approvedPanel = useMemo(() => {
++    const draftTier1 = node4Draft?.tier1Mappings ?? [];
++    const autoApproved: Array<{ source: string; target: string | null; confidence: number | null; origin: string }> = [];
++    for (const raw of draftTier1) {
++      const rec = asRecord(raw);
++      if (!rec) continue;
++      const source = readString(rec.source_field) ?? readString(rec.sourceField) ?? readString(rec.column) ?? readString(rec.source) ?? null;
++      if (!source) continue;
++      const target = readString(rec.target_field) ?? readString(rec.targetField) ?? readString(rec.target) ?? null;
++      const confidence = readNumber(rec.confidence) ?? readNumber(rec.score) ?? null;
++      autoApproved.push({ source, target, confidence, origin: "auto" });
++    }
++
++    const humanApproved: Array<{ source: string; target: string | null; confidence: number | null; origin: string }> = [];
++    for (const g of node4FlaggedGroups) {
++      if (node4Decisions[g.sourceField] !== true) continue;
++      humanApproved.push({ source: g.sourceField, target: g.bestTarget, confidence: g.bestConfidence, origin: "human" });
++    }
++
++    const rejectedCount = node4FlaggedGroups.filter((g) => node4Decisions[g.sourceField] === false).length;
++    const pendingCount = node4FlaggedGroups.filter((g) => node4Decisions[g.sourceField] == null).length;
++
++    if (node4Response?.final_mappings?.length) {
++      const approved = node4Response.final_mappings
++        .filter((m) => {
++          const status = (m.approval_status ?? "").toLowerCase();
++          if (!status) return true;
++          if (status.includes("reject")) return false;
++          if (status.includes("unmap")) return false;
++          if (status.includes("approved")) return true;
++          return true;
++        })
++        .map((m) => ({
++          source: m.source_field,
++          target: m.target_field,
++          confidence: typeof m.confidence === "number" ? m.confidence : null,
++          origin: m.source,
++        }));
++
++      return {
++        approved,
++        counters: {
++          approvedCount: approved.length,
++          pendingCount: 0,
++          rejectedCount: 0,
++          autoCount: node4Response.mapping_stats?.auto_approved ?? null,
++          humanCount: node4Response.mapping_stats?.human_approved ?? null,
++        },
++      };
++    }
++
++    const approved = [...autoApproved, ...humanApproved];
++    return {
++      approved,
++      counters: {
++        approvedCount: approved.length,
++        pendingCount,
++        rejectedCount,
++        autoCount: autoApproved.length,
++        humanCount: humanApproved.length,
++      },
++    };
++  }, [node4Draft?.tier1Mappings, node4FlaggedGroups, node4Decisions, node4Response]);
++
+   useEffect(() => {
+     const el = centerScrollRef.current;
+     if (!el) return;
+@@ -815,11 +1073,15 @@ export function AiChatClient() {
+   }, [messages.length, pending]);
+ 
+   useEffect(() => {
+-    if (ingesting) setCenterTab("overview");
++    setMounted(true);
++  }, []);
++
++  useEffect(() => {
++    if (ingesting) setCenterTab("flow");
+   }, [ingesting]);
+ 
+   useEffect(() => {
+-    if (ingestResponse) setCenterTab("overview");
++    if (ingestResponse) setCenterTab("flow");
+   }, [ingestResponse]);
+ 
+   useEffect(() => {
+@@ -827,31 +1089,54 @@ export function AiChatClient() {
+     const migrationId = readString(root?.migration_id);
+     if (!migrationId) return;
+     if (node4MigrationId === migrationId) return;
+-    if (node4Mutation.isPending) return;
+ 
+     setNode4MigrationId(migrationId);
+     setNode4Response(null);
+     setNode4Error(null);
++    setNode4Draft({
++      migrationId,
++      tier1Mappings: readUnknownArray(root?.tier1_mappings),
++      tier2FlaggedMappings: readUnknownArray(root?.tier2_flagged_mappings),
++      tier2Unmappable: readUnknownArray(root?.tier2_unmappable),
++    });
++    setNode4Decisions({});
+ 
++    if (readUnknownArray(root?.tier2_flagged_mappings).length) {
++      setCenterTab("review");
++    }
++  }, [ingestResponse, node4MigrationId]);
++
++  const runNode4HumanReview = async () => {
++    if (!node4Draft) return;
++    if (node4Mutation.isPending) return;
++    if (!node4AllReviewed) return;
++    setNode4Error(null);
++    const approvals = node4FlaggedGroups.map((g) => ({
++      source_field: g.sourceField,
++      target_field: g.bestTarget,
++      approved: node4Decisions[g.sourceField] === true,
++    }));
++    const intentionallyUnmapped = node4FlaggedGroups
++      .filter((g) => node4Decisions[g.sourceField] === false)
++      .map((g) => g.sourceField);
+     const payload = {
+-      migration_id: migrationId,
+-      tier1_mappings: readUnknownArray(root?.tier1_mappings),
+-      tier2_flagged_mappings: readUnknownArray(root?.tier2_flagged_mappings),
+-      tier2_unmappable: readUnknownArray(root?.tier2_unmappable),
+-      flagged_approvals: [],
++      migration_id: node4Draft.migrationId,
++      tier1_mappings: node4Draft.tier1Mappings,
++      tier2_flagged_mappings: node4Draft.tier2FlaggedMappings,
++      tier2_unmappable: node4Draft.tier2Unmappable,
++      flagged_approvals: approvals,
+       custom_mappings: [],
+-      intentionally_unmapped: [],
++      intentionally_unmapped: intentionallyUnmapped,
+     };
+-
+-    void node4Mutation
+-      .mutateAsync(payload)
+-      .then((res) => {
+-        setNode4Response(res);
+-      })
+-      .catch((e) => {
+-        setNode4Error(getAiErrorMessage(e));
+-      });
+-  }, [ingestResponse, node4MigrationId, node4Mutation]);
++    try {
++      const res = await node4Mutation.mutateAsync(payload);
++      setNode4Response(res);
++      toast({ title: "Human review saved", variant: "success" });
++    } catch (e) {
++      setNode4Error(getAiErrorMessage(e));
++      toast({ title: "Human review failed", description: getAiErrorMessage(e), variant: "destructive" });
++    }
++  };
+ 
+   const [, setLogs] = useState<ExecutionLog[]>(() => [
+     {
+@@ -1389,11 +1674,21 @@ export function AiChatClient() {
+   };
+ 
+   const gateNext = useMemo(() => {
+-    if (node4Summary && !node4Summary.failed && !node5Response && !node5Mutation.isPending) return "Node 5 • Preprocess & Validate";
+-    if (node5Summary && !node5Summary.failed && !node6Response && !node6Mutation.isPending) return "Node 6 • Resolve Hierarchy";
+-    if (node6Summary && !node6Summary.failed && !node7Response && !node7Mutation.isPending) return "Node 7 • Verify Hierarchy";
+-    if (node7Summary && !node7Summary.failed && !node8Response && !node8Mutation.isPending) return "Node 8 • Generate Output";
+-    if (node8Summary && !node8Summary.failed && !node9Response && !node9Mutation.isPending) return "Node 9 • Write Output";
++    if (node4Summary && !node4Summary.failed && !node5Response && !node5Mutation.isPending) {
++      return { id: "preprocess" as const, label: "Node 5 • Preprocess & Validate" };
++    }
++    if (node5Summary && !node5Summary.failed && !node6Response && !node6Mutation.isPending) {
++      return { id: "hierarchy" as const, label: "Node 6 • Resolve Hierarchy" };
++    }
++    if (node6Summary && !node6Summary.failed && !node7Response && !node7Mutation.isPending) {
++      return { id: "verify" as const, label: "Node 7 • Verify Hierarchy" };
++    }
++    if (node7Summary && !node7Summary.failed && !node8Response && !node8Mutation.isPending) {
++      return { id: "output" as const, label: "Node 8 • Generate Output" };
++    }
++    if (node8Summary && !node8Summary.failed && !node9Response && !node9Mutation.isPending) {
++      return { id: "output" as const, label: "Node 9 • Write Output" };
++    }
+     return null;
+   }, [
+     node4Summary,
+@@ -1413,6 +1708,222 @@ export function AiChatClient() {
+     node9Mutation.isPending,
+   ]);
+ 
++  const gateNextKey = useMemo(() => {
++    const label = gateNext?.label ?? "";
++    if (label.startsWith("Node 5")) return "node5";
++    if (label.startsWith("Node 6")) return "node6";
++    if (label.startsWith("Node 7")) return "node7";
++    if (label.startsWith("Node 8")) return "node8";
++    if (label.startsWith("Node 9")) return "node9";
++    return null;
++  }, [gateNext?.label]);
++
++  const flowNodes = useMemo(() => {
++    const items: Array<{
++      id: "ingest" | "node4" | "node5" | "node6" | "node7" | "node8" | "node9";
++      title: string;
++      subtitle: string;
++      status: "pending" | "running" | "blocked" | "done" | "failed";
++    }> = [];
++
++    const ingestStatus: "pending" | "running" | "done" | "failed" =
++      ingesting ? "running" : ingestError ? "failed" : ingestSummary ? "done" : "pending";
++    items.push({
++      id: "ingest",
++      title: "Ingest & Map",
++      subtitle: "Node 1–3 • Upload, parse, deterministic + semantic mapping",
++      status: ingestStatus,
++    });
++
++    const node4Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node4Mutation.isPending
++        ? "running"
++        : node4Error || node4Summary?.failed
++          ? "failed"
++          : node4Summary
++            ? "done"
++            : node4Draft || ingestSummary
++              ? "blocked"
++              : "pending";
++    items.push({
++      id: "node4",
++      title: "Human Review",
++      subtitle: "Node 4 • Review flagged mappings",
++      status: node4Status,
++    });
++
++    const node5Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node5Mutation.isPending
++        ? "running"
++        : node5Error || node5Summary?.failed
++          ? "failed"
++          : node5Summary
++            ? "done"
++            : gateNextKey === "node5"
++              ? "blocked"
++              : node4Summary
++                ? "pending"
++                : "pending";
++    items.push({
++      id: "node5",
++      title: "Preprocess",
++      subtitle: "Node 5 • Clean, dedup, validate",
++      status: node5Status,
++    });
++
++    const node6Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node6Mutation.isPending
++        ? "running"
++        : node6Error || node6Summary?.failed
++          ? "failed"
++          : node6Summary
++            ? "done"
++            : gateNextKey === "node6"
++              ? "blocked"
++              : node5Summary
++                ? "pending"
++                : "pending";
++    items.push({
++      id: "node6",
++      title: "Resolve Hierarchy",
++      subtitle: "Node 6 • Detect and resolve containment relations",
++      status: node6Status,
++    });
++
++    const node7Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node7Mutation.isPending
++        ? "running"
++        : node7Error || node7Summary?.failed
++          ? "failed"
++          : node7Summary
++            ? "done"
++            : gateNextKey === "node7"
++              ? "blocked"
++              : node6Summary
++                ? "pending"
++                : "pending";
++    items.push({
++      id: "node7",
++      title: "Verify Hierarchy",
++      subtitle: "Node 7 • Approve/resolution checks",
++      status: node7Status,
++    });
++
++    const node8Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node8Mutation.isPending
++        ? "running"
++        : node8Error || node8Summary?.failed
++          ? "failed"
++          : node8Summary
++            ? "done"
++            : gateNextKey === "node8"
++              ? "blocked"
++              : node7Summary
++                ? "pending"
++                : "pending";
++    items.push({
++      id: "node8",
++      title: "Generate Output",
++      subtitle: "Node 8 • JSON/CSV/SQL + report",
++      status: node8Status,
++    });
++
++    const node9Status: "pending" | "running" | "blocked" | "done" | "failed" =
++      node9Mutation.isPending
++        ? "running"
++        : node9Error || node9Summary?.failed
++          ? "failed"
++          : node9Summary
++            ? "done"
++            : gateNextKey === "node9"
++              ? "blocked"
++              : node8Summary
++                ? "pending"
++                : "pending";
++    items.push({
++      id: "node9",
++      title: "Write Output",
++      subtitle: "Node 9 • Final handoff",
++      status: node9Status,
++    });
++
++    let lastRelevantIndex = -1;
++    for (let i = 0; i < items.length; i += 1) {
++      if (items[i].status !== "pending") lastRelevantIndex = i;
++    }
++    const visibleMax = Math.min(items.length - 1, Math.max(lastRelevantIndex + 1, 0));
++    return items.slice(0, visibleMax + 1);
++  }, [
++    ingesting,
++    ingestError,
++    ingestSummary,
++    node4Mutation.isPending,
++    node4Error,
++    node4Summary,
++    node5Mutation.isPending,
++    node5Error,
++    node5Summary,
++    node6Mutation.isPending,
++    node6Error,
++    node6Summary,
++    node7Mutation.isPending,
++    node7Error,
++    node7Summary,
++    node8Mutation.isPending,
++    node8Error,
++    node8Summary,
++    node9Mutation.isPending,
++    node9Error,
++    node9Summary,
++    gateNextKey,
++  ]);
++
++  const flowActiveId = useMemo(() => {
++    const running = flowNodes.find((n) => n.status === "running");
++    if (running) return running.id;
++    const blocked = flowNodes.find((n) => n.status === "blocked");
++    if (blocked) return blocked.id;
++    const failed = flowNodes.find((n) => n.status === "failed");
++    if (failed) return failed.id;
++    return flowNodes.length ? flowNodes[flowNodes.length - 1].id : "ingest";
++  }, [flowNodes]);
++
++  useEffect(() => {
++    if (centerTab !== "flow") return;
++    const el = document.getElementById(`flow_${flowActiveId}`);
++    if (!el) return;
++    el.scrollIntoView({ block: "start", behavior: "smooth" });
++  }, [centerTab, flowActiveId]);
++
++  useEffect(() => {
++    if (!activeActionId) return;
++    const anyError =
++      !!ingestError || !!node4Error || !!node5Error || !!node6Error || !!node7Error || !!node8Error || !!node9Error;
++    if (anyError) {
++      updateRecentAction(activeActionId, { status: "failed" });
++      return;
++    }
++    if (node9Response && !node9Summary?.failed) {
++      updateRecentAction(activeActionId, { status: "done" });
++      return;
++    }
++    if (gateNext) {
++      updateRecentAction(activeActionId, { status: "needs_approval" });
++    }
++  }, [
++    activeActionId,
++    ingestError,
++    node4Error,
++    node5Error,
++    node6Error,
++    node7Error,
++    node8Error,
++    node9Error,
++    node9Response,
++    node9Summary?.failed,
++    gateNext,
++  ]);
++
+   useEffect(() => {
+     if (node5Mutation.isPending) setCenterTab("preprocess");
+   }, [node5Mutation.isPending]);
+@@ -1429,12 +1940,17 @@ export function AiChatClient() {
+     if (node8Mutation.isPending) setCenterTab("output");
+   }, [node8Mutation.isPending]);
+ 
+-  const ingestWithSemantic = async (file: File) => {
++  const ingestWithSemantic = async (file: File, meta?: { fileType: string; cleanliness: string; description: string }) => {
+     if (ingesting) return;
+     if (platform !== "flix") {
+       toast({ title: "Select Flix", description: "Fiix ingestion is available for Flix only.", variant: "destructive" });
+       return;
+     }
++    const actionId = createRecentAction({
++      template: actionTemplate,
++      title: meta?.description ? `${meta.description} Ingestion` : actionTemplate === "pdf" ? "PDF Ingestion" : actionTemplate === "cmms" ? "Live CMMS Connection" : actionTemplate === "db" ? "Database View" : "CSV Ingestion",
++      fileName: file.name,
++    });
+     setIngesting(true);
+     setIngestStartedAt(Date.now());
+     setIngestEndedAt(null);
+@@ -1443,6 +1959,9 @@ export function AiChatClient() {
+     setNode4Response(null);
+     setNode4Error(null);
+     setNode4MigrationId(null);
++    setNode4Draft(null);
++    setNode4Decisions({});
++    setStepDecisions({ node5: null, node6: null, node7: null, node8: null, node9: null });
+     setNode5Response(null);
+     setNode5Error(null);
+     setNode5MigrationId(null);
+@@ -1464,6 +1983,11 @@ export function AiChatClient() {
+       form.append("mapper_json", "");
+       form.append("cmms_name", "Custom");
+       form.append("organization_id", "00000000-0000-0000-0000-000000000001");
++      if (meta) {
++        form.append("file_type", meta.fileType);
++        form.append("cleanliness", meta.cleanliness);
++        form.append("description", meta.description);
++      }
+ 
+       const res = await aiRequest<unknown, FormData>({
+         method: "POST",
+@@ -1473,6 +1997,9 @@ export function AiChatClient() {
+       });
+ 
+       setIngestResponse(res);
++      const root = asRecord(res);
++      const migrationId = readString(root?.migration_id) ?? undefined;
++      updateRecentAction(actionId, { status: "needs_approval", migrationId, fileName: file.name });
+       setIngestEndedAt(Date.now());
+       setLogs((prev) => [
+         {
+@@ -1489,6 +2016,7 @@ export function AiChatClient() {
+     } catch (e) {
+       const msg = e instanceof Error ? e.message : "Failed to ingest file";
+       setIngestError(msg);
++      updateRecentAction(actionId, { status: "failed" });
+       setIngestEndedAt(Date.now());
+       toast({ title: "Ingest failed", description: msg, variant: "destructive" });
+       setLogs((prev) => [
+@@ -1507,7 +2035,18 @@ export function AiChatClient() {
+     }
+   };
+ 
+-  const acceptAny = "*";
++  const acceptUpload =
++    actionTemplate === "csv"
++      ? ".csv,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
++      : actionTemplate === "pdf"
++        ? ".pdf,application/pdf"
++        : "*";
++  const uploadDescription =
++    actionTemplate === "csv"
++      ? "CSV/Excel (max 20MB)"
++      : actionTemplate === "pdf"
++        ? "PDF (max 20MB)"
++        : "CSV, Excel, PDF, images, etc. (max 20MB)";
+   const stepTone = (s: IngestStepStatus): LogTone => {
+     if (s === "done") return "success";
+     if (s === "failed") return "error";
+@@ -1516,6 +2055,7 @@ export function AiChatClient() {
+   };
+ 
+   const showIngestUi =
++    centerTab === "flow" ||
+     ingesting ||
+     !!selectedFile ||
+     !!ingestResponse ||
+@@ -1564,7 +2104,7 @@ export function AiChatClient() {
+ 
+   const visibleTabs = useMemo(() => {
+     const hasIngest = !!ingestResponse || ingesting || !!ingestError;
+-    const hasReview = node4Mutation.isPending || !!node4Response || !!node4Error;
++    const hasReview = !!node4Draft || node4Mutation.isPending || !!node4Response || !!node4Error;
+     const hasPreprocess = node5Mutation.isPending || !!node5Response || !!node5Error;
+     const hasHierarchy = node6Mutation.isPending || !!node6Response || !!node6Error;
+     const hasVerify = node7Mutation.isPending || !!node7Response || !!node7Error;
+@@ -1573,6 +2113,7 @@ export function AiChatClient() {
+     const hasLogs = groupedExecutionLogs.length > 0;
+ 
+     const tabs: Array<{ id: typeof centerTab; label: string; disabled?: boolean }> = [
++      { id: "flow", label: "Flow", disabled: false },
+       {
+         id: "overview",
+         label: "Overview",
+@@ -1593,6 +2134,7 @@ export function AiChatClient() {
+     ingesting,
+     ingestError,
+     node4Mutation.isPending,
++    node4Draft,
+     node4Response,
+     node4Error,
+     node5Mutation.isPending,
+@@ -1619,12 +2161,61 @@ export function AiChatClient() {
+     }
+   }, [centerTab, visibleTabs]);
+ 
++  const visibleTabIds = useMemo(() => new Set(visibleTabs.map((t) => t.id)), [visibleTabs]);
++  const jumpToTab = (id: typeof centerTab) => {
++    if (!visibleTabIds.has(id)) return;
++    setCenterTab(id);
++  };
++  const jumpToFlowNode = (id: "ingest" | "node4" | "node5" | "node6" | "node7" | "node8" | "node9") => {
++    setCenterTab("flow");
++    queueMicrotask(() => {
++      const el = document.getElementById(`flow_${id}`);
++      el?.scrollIntoView({ block: "start", behavior: "smooth" });
++    });
++  };
++
++  const closeWizardDialog = () => {
++    setWizardOpen(false);
++    setWizardStep(1);
++    setWizardData({ fileType: "", cleanliness: "", description: "" });
++  };
++
++  const closeCmmsDialog = () => {
++    setCmmsDialogOpen(false);
++    setCmmsCreds({ app_key: "", access_key: "", secret: "" });
++    setCmmsTestResult(null);
++    setCmmsTestError(null);
++  };
++
++  const testCmmsConnection = async () => {
++    if (cmmsTestMutation.isPending) return;
++    setCmmsTestError(null);
++    setCmmsTestResult(null);
++    const hasCreds =
++      cmmsCreds.app_key.trim().length > 0 && cmmsCreds.access_key.trim().length > 0 && cmmsCreds.secret.trim().length > 0;
++    try {
++      if (hasCreds) {
++        const res = await cmmsTestMutation.mutateAsync({ platform: cmmsPlatform, body: cmmsCreds });
++        setCmmsTestResult(res);
++        toast({ title: "CMMS connection ok", variant: "success" });
++      } else {
++        await testConnection();
++        setCmmsTestResult({ ok: true });
++      }
++    } catch (e) {
++      const msg = getAiErrorMessage(e);
++      setCmmsTestError(msg);
++      toast({ title: "CMMS connection failed", description: msg, variant: "destructive" });
++    }
++  };
++
+   return (
++    <>
+     <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] xl:grid-cols-[240px_1fr_420px] gap-0 h-full min-h-0 bg-muted/20 p-3 sm:p-4">
+       <aside className="hidden lg:block h-full min-h-0 pr-4">
+         <div className="h-full min-h-0 rounded-2xl bg-muted/30 border border-border/60 flex flex-col overflow-hidden">
+           <div className="p-4">
+-            <div className="text-sm font-semibold text-foreground">Marmot Analytics</div>
++            <div className="text-sm font-semibold text-foreground"> Analytics</div>
+             <div className="text-[11px] text-muted-foreground mt-0.5">ENTERPRISE AI WORKSPACE</div>
+             <div className="mt-3">
+               <select
+@@ -1636,43 +2227,85 @@ export function AiChatClient() {
+                 <option value="marmot">Marmot</option>
+               </select>
+             </div>
++            <div className="mt-3">
++              <select
++                className="h-9 w-full rounded-xl border border-border/60 bg-background px-3 text-sm text-foreground"
++                value={cmmsPlatform}
++                onChange={(e) => setCmmsPlatform(e.target.value as FiixPlatform)}
++              >
++                <option value="fiix">Fiix</option>
++              </select>
++            </div>
+             <Button
+               type="button"
+               className="mt-3 w-full h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+-              disabled={testing || platform !== "flix"}
+-              onClick={() => void testConnection()}
++              onClick={() => {
++                setCmmsTestResult(null);
++                setCmmsTestError(null);
++                setCmmsDialogOpen(true);
++              }}
+             >
+-              {testing ? "Testing..." : "Test Connection"}
++              Connect CMMS
+             </Button>
+             <Button
+               type="button"
+               className="mt-3 w-full h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
++              onClick={() => {
++                resetActionState();
++                setFileOpen(false);
++                setActionTemplate("csv");
++                toast({ title: "New action", description: "Select a template or upload a file.", variant: "success" });
++              }}
+             >
+               <Plus className="h-4 w-4" />
+-              New Chat
++              New Action
+             </Button>
+           </div>
+ 
+-          <div className="px-3 space-y-1">
++          <div className="px-4 mt-1">
++            <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">PINNED TEMPLATES</div>
++          </div>
++          <div className="mt-3 px-3 space-y-1">
+             {[
+-              { label: "Chats", icon: MessageSquare, active: true },
+-              { label: "Files", icon: Folder, active: false },
+-              { label: "History", icon: History, active: false },
+-            ].map((it) => {
+-              const Icon = it.icon;
++              { id: "csv" as const, label: "CSV Ingestion", icon: FileText, desc: "Upload CSV / Excel for mapping" },
++              { id: "pdf" as const, label: "PDF Ingestion", icon: FileText, desc: "Upload PDF docs for extraction" },
++              { id: "cmms" as const, label: "Live CMMS Connection", icon: Plug, desc: "Connect via keys & test" },
++              { id: "db" as const, label: "Database View", icon: Database, desc: "Browse and rerun database" },
++            ].map((t) => {
++              const Icon = t.icon;
++              const active = actionTemplate === t.id;
+               return (
+                 <button
+-                  key={it.label}
++                  key={t.id}
+                   type="button"
++                  onClick={() => {
++                    resetActionState();
++                    setActionTemplate(t.id);
++                    if (t.id === "csv" || t.id === "pdf") {
++                      setFileOpen(true);
++                      toast({ title: t.label, description: "Attach a file to start.", variant: "success" });
++                    } else if (t.id === "cmms") {
++                      setCmmsTestResult(null);
++                      setCmmsTestError(null);
++                      setCmmsDialogOpen(true);
++                    } else {
++                      toast({ title: t.label, description: "This template UI will be added next.", variant: "success" });
++                    }
++                  }}
+                   className={cn(
+-                    "w-full flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors",
+-                    it.active
+-                      ? "bg-primary/10 text-primary"
+-                      : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
++                    "w-full rounded-2xl border border-border/60 bg-background/40 px-3 py-3 text-left transition-colors",
++                    active ? "ring-1 ring-primary/25" : "hover:bg-muted/30",
+                   )}
+                 >
+-                  <Icon className="h-4 w-4" />
+-                  <span className="font-medium">{it.label}</span>
++                  <div className="flex items-start gap-3">
++                    <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center shrink-0", active ? "bg-primary/10 text-primary" : "bg-muted/40 text-muted-foreground")}>
++                      <Icon className="h-4 w-4" />
++                    </div>
++                    <div className="min-w-0">
++                      <div className="text-sm font-semibold truncate">{t.label}</div>
++                      <div className="mt-0.5 text-[11px] text-muted-foreground truncate">{t.desc}</div>
++                    </div>
++                  </div>
+                 </button>
+               );
+             })}
+@@ -1680,20 +2313,49 @@ export function AiChatClient() {
+ 
+           <div className="px-4 mt-5">
+             <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">
+-              RECENT PROCESSING
++              RECENT ACTIONS
+             </div>
+           </div>
+           <div className="mt-3 px-3 space-y-1 overflow-y-auto min-h-0">
+-            {["Asset File Processing", "Cloud Ingest v2", "User Metadata Audit"].map((t) => (
+-              <button
+-                key={t}
+-                type="button"
+-                className="w-full flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+-              >
+-                <span className="truncate">{t}</span>
+-                <ChevronRight className="h-4 w-4 opacity-60" />
+-              </button>
+-            ))}
++            {recentActions.length ? (
++              recentActions.map((a) => {
++                const badge =
++                  a.status === "running"
++                    ? "bg-orange-500/10 text-orange-700 border-orange-500/20"
++                    : a.status === "needs_approval"
++                      ? "bg-blue-500/10 text-blue-700 border-blue-500/20"
++                      : a.status === "failed"
++                        ? "bg-red-500/10 text-red-700 border-red-500/20"
++                        : a.status === "done"
++                          ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
++                          : "bg-muted/40 text-muted-foreground border-border/60";
++                return (
++                  <button
++                    key={a.id}
++                    type="button"
++                    onClick={() => {
++                      toast({ title: a.title, description: a.migrationId ? `Migration: ${a.migrationId}` : "No migration id", variant: "success" });
++                    }}
++                    className="w-full flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left hover:bg-muted/40 transition-colors"
++                  >
++                    <div className="min-w-0">
++                      <div className="text-sm font-medium truncate">{a.title}</div>
++                      <div className="mt-0.5 text-[11px] text-muted-foreground truncate">
++                        {a.fileName ? a.fileName : a.template.toUpperCase()} • {formatTime(a.createdAt)}
++                      </div>
++                    </div>
++                    <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0", badge)}>
++                      {a.status === "needs_approval" ? "Approval" : a.status}
++                    </span>
++                  </button>
++                );
++              })
++            ) : (
++              <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
++                <div className="text-sm font-semibold">No actions yet</div>
++                <div className="mt-1 text-xs text-muted-foreground">Choose a template or upload a file to start.</div>
++              </div>
++            )}
+           </div>
+ 
+           <div className="mt-auto p-4 border-t border-border/60">
+@@ -1718,6 +2380,80 @@ export function AiChatClient() {
+               <div className="text-xs text-muted-foreground mt-0.5">
+                 Active processing stream • Workspace / Assets
+               </div>
++              <div className="mt-3 flex flex-wrap items-center gap-2">
++                {[
++                  { label: "Flow", onClick: () => jumpToTab("flow") },
++                  { label: "Overview", onClick: () => jumpToTab("overview") },
++                  { label: "Review", onClick: () => jumpToTab("review") },
++                  { label: "Preprocess", onClick: () => jumpToTab("preprocess") },
++                  { label: "Hierarchy", onClick: () => jumpToTab("hierarchy") },
++                  { label: "Verify", onClick: () => jumpToTab("verify") },
++                  { label: "Output", onClick: () => jumpToTab("output") },
++                  { label: "Logs", onClick: () => jumpToTab("logs") },
++                ]
++                  .filter((x) => {
++                    const id =
++                      x.label === "Flow"
++                        ? ("flow" as const)
++                        : x.label === "Overview"
++                          ? ("overview" as const)
++                          : x.label === "Review"
++                            ? ("review" as const)
++                            : x.label === "Preprocess"
++                              ? ("preprocess" as const)
++                              : x.label === "Hierarchy"
++                                ? ("hierarchy" as const)
++                                : x.label === "Verify"
++                                  ? ("verify" as const)
++                                  : x.label === "Output"
++                                    ? ("output" as const)
++                                    : ("logs" as const);
++                    return visibleTabIds.has(id);
++                  })
++                  .map((x) => (
++                    <button
++                      key={x.label}
++                      type="button"
++                      onClick={x.onClick}
++                      className={cn(
++                        "h-8 px-3 rounded-xl border text-xs font-semibold transition-colors",
++                        "border-border/60 bg-muted/10 text-muted-foreground hover:bg-muted/30 hover:text-foreground",
++                      )}
++                    >
++                      {x.label}
++                    </button>
++                  ))}
++
++                {gateNext ? (
++                  <button
++                    type="button"
++                    onClick={() => {
++                      jumpToTab(gateNext.id);
++                      if (gateNext.id === "output" && gateNext.label.startsWith("Node 9")) jumpToFlowNode("node9");
++                      if (gateNext.id === "output" && gateNext.label.startsWith("Node 8")) jumpToFlowNode("node8");
++                      if (gateNext.id === "verify") jumpToFlowNode("node7");
++                      if (gateNext.id === "hierarchy") jumpToFlowNode("node6");
++                      if (gateNext.id === "preprocess") jumpToFlowNode("node5");
++                    }}
++                    className="h-8 px-3 rounded-xl border border-primary/25 bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/15 transition-colors"
++                  >
++                    Next: {gateNext.label}
++                  </button>
++                ) : null}
++
++                {node4Draft && !node4Response ? (
++                  <button
++                    type="button"
++                    onClick={() => {
++                      jumpToTab("review");
++                      jumpToFlowNode("node4");
++                    }}
++                    className="h-8 px-3 rounded-xl border border-orange-500/25 bg-orange-500/10 text-orange-700 text-xs font-semibold hover:bg-orange-500/15 transition-colors"
++                  >
++                    Review: Node 4
++                  </button>
++                ) : null}
++              </div>
+             </div>
+             <div className="flex items-center gap-2">
+               <button
+@@ -1862,6 +2598,179 @@ export function AiChatClient() {
+                 </div>
+               ) : ingestSummary || ingestError ? (
+                 <div className="mt-6 space-y-4">
++                  {centerTab === "flow" ? (
++                    <div className="space-y-4">
++                      {flowNodes.map((n, idx) => {
++                        const tone: LogTone =
++                          n.status === "done"
++                            ? "success"
++                            : n.status === "failed"
++                              ? "error"
++                              : n.status === "running" || n.status === "blocked"
++                                ? "warning"
++                                : "neutral";
++                        const s = toneStyles(tone);
++                        const Icon = s.icon;
++                        const isActive = n.id === flowActiveId;
++                        const showConfirm =
++                          n.status === "blocked" &&
++                          ((n.id === "node5" && gateNextKey === "node5") ||
++                            (n.id === "node6" && gateNextKey === "node6") ||
++                            (n.id === "node7" && gateNextKey === "node7") ||
++                            (n.id === "node8" && gateNextKey === "node8") ||
++                            (n.id === "node9" && gateNextKey === "node9"));
++                        const showReview = n.id === "node4" && n.status === "blocked" && !node4Response;
++                        const stepKey =
++                          n.id === "node5"
++                            ? ("node5" as const)
++                            : n.id === "node6"
++                              ? ("node6" as const)
++                              : n.id === "node7"
++                                ? ("node7" as const)
++                                : n.id === "node8"
++                                  ? ("node8" as const)
++                                  : n.id === "node9"
++                                    ? ("node9" as const)
++                                    : null;
++                        const decision = stepKey ? stepDecisions[stepKey] : null;
++                        const canConfirm =
++                          showConfirm &&
++                          ((n.id === "node5" && !!node4Response && !node5Mutation.isPending) ||
++                            (n.id === "node6" && !!node5Response && !!node4Response && !node6Mutation.isPending) ||
++                            (n.id === "node7" && !!node6Response && !node7Mutation.isPending) ||
++                            (n.id === "node8" && !!node7Response && !!node5Response && !!node4Response && !node8Mutation.isPending) ||
++                            (n.id === "node9" && !!node8Response && !node9Mutation.isPending));
++                        return (
++                          <div
++                            key={n.id}
++                            id={`flow_${n.id}`}
++                            className={cn(
++                              "rounded-2xl border bg-background/60 p-5",
++                              s.ring,
++                              isActive ? "ring-2 ring-primary/25" : "",
++                            )}
++                          >
++                            <div className="flex items-start justify-between gap-4">
++                              <div className="flex items-start gap-3 min-w-0">
++                                <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", s.bg)}>
++                                  <Icon className={cn("h-5 w-5", s.text, n.status === "running" ? "animate-spin" : "")} />
++                                </div>
++                                <div className="min-w-0">
++                                  <div className="text-sm font-semibold truncate">
++                                    {idx + 1}. {n.title}
++                                  </div>
++                                  <div className="mt-0.5 text-xs text-muted-foreground truncate">{n.subtitle}</div>
++                                </div>
++                              </div>
++                              <div className="flex items-center gap-2 shrink-0">
++                                {showReview ? (
++                                  <Button type="button" size="sm" variant="secondary" onClick={() => setCenterTab("review")}>
++                                    Review
++                                  </Button>
++                                ) : null}
++                                {showConfirm ? (
++                                  <div className="flex items-center gap-2">
++                                    <Button
++                                      type="button"
++                                      size="sm"
++                                      variant={decision === true ? "default" : "secondary"}
++                                      onClick={() => {
++                                        if (!stepKey) return;
++                                        setStepDecision(stepKey, true);
++                                        if (!canConfirm) return;
++                                        if (n.id === "node5") void runNode5Preprocess();
++                                        if (n.id === "node6")
++                                          void runNode6Resolve({ node5: node5Response as Node5PreprocessResponse, node4: node4Response as Node4HumanReviewResponse });
++                                        if (n.id === "node7") void runNode7Verify({ node6: node6Response as Node6ResolveHierarchyResponse });
++                                        if (n.id === "node8")
++                                          void runNode8GenerateOutput({
++                                            node7: node7Response as Node7VerifyHierarchyResponse,
++                                            node5: node5Response as Node5PreprocessResponse,
++                                            node4: node4Response as Node4HumanReviewResponse,
++                                          });
++                                        if (n.id === "node9") void runNode9WriteOutput({ node8: node8Response as Node8GenerateOutputResponse });
++                                      }}
++                                      disabled={!canConfirm}
++                                    >
++                                      Yes
++                                    </Button>
++                                    <Button
++                                      type="button"
++                                      size="sm"
++                                      variant={decision === false ? "destructive" : "secondary"}
++                                      onClick={() => {
++                                        if (!stepKey) return;
++                                        setStepDecision(stepKey, false);
++                                      }}
++                                    >
++                                      No
++                                    </Button>
++                                  </div>
++                                ) : null}
++                                <span
++                                  className={cn(
++                                    "rounded-full border px-2.5 py-1 text-[11px] font-semibold",
++                                    n.status === "done"
++                                      ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
++                                      : n.status === "failed"
++                                        ? "bg-red-500/10 text-red-700 border-red-500/20"
++                                        : n.status === "running" || n.status === "blocked"
++                                          ? "bg-orange-500/10 text-orange-700 border-orange-500/20"
++                                          : "bg-muted/40 text-muted-foreground border-border/60",
++                                  )}
++                                >
++                                  {n.status === "blocked" ? (decision === false ? "Declined" : "Needs approval") : n.status}
++                                </span>
++                              </div>
++                            </div>
++
++                            {n.id === "ingest" && ingestSummary ? (
++                              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
++                                <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                                  <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">MIGRATION</div>
++                                  <div className="mt-1 text-sm font-semibold font-mono truncate">{ingestSummary.migrationId ?? "--"}</div>
++                                </div>
++                                <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                                  <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">ROWS</div>
++                                  <div className="mt-1 text-sm font-semibold">{ingestSummary.rowCount ?? "--"}</div>
++                                </div>
++                                <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                                  <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">COLUMNS</div>
++                                  <div className="mt-1 text-sm font-semibold">{ingestSummary.columnCount ?? "--"}</div>
++                                </div>
++                                <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                                  <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">MAPPED</div>
++                                  <div className="mt-1 text-sm font-semibold">{ingestSummary.mappedFieldsCount ?? "--"}</div>
++                                </div>
++                              </div>
++                            ) : null}
++
++                            {n.id === "node4" && node4Summary ? (
++                              <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
++                                {[
++                                  { k: "AUTO", v: node4Summary.mappingStats.autoApproved, cls: "" },
++                                  { k: "HUMAN", v: node4Summary.mappingStats.humanApproved, cls: "" },
++                                  { k: "CUSTOM", v: node4Summary.mappingStats.customAdded, cls: "" },
++                                  { k: "UNMAPPED", v: node4Summary.mappingStats.intentionallyUnmapped, cls: "" },
++                                  {
++                                    k: "EL-M4",
++                                    v: node4Summary.elM4 === true ? "PASS" : node4Summary.elM4 === false ? "FAIL" : "--",
++                                    cls: node4Summary.elM4 === false ? "text-red-700" : "",
++                                  },
++                                ].map((x) => (
++                                  <div key={x.k} className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                                    <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">{x.k}</div>
++                                    <div className={cn("mt-1 text-sm font-semibold", x.cls)}>{x.v ?? "--"}</div>
++                                  </div>
++                                ))}
++                              </div>
++                            ) : null}
++                          </div>
++                        );
++                      })}
++                    </div>
++                  ) : null}
++
+                   {centerTab === "overview" ? (
+                     <div className="space-y-4">
+                       {ingestError && !ingestSummary ? (
+@@ -2225,6 +3134,8 @@ export function AiChatClient() {
+                                   ? "bg-red-500/10 text-red-700 border-red-500/20"
+                                   : node4Response
+                                     ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
++                                    : node4Draft
++                                      ? "bg-orange-500/10 text-orange-700 border-orange-500/20"
+                                     : "bg-muted/40 text-muted-foreground border-border/60",
+                             )}
+                           >
+@@ -2234,7 +3145,9 @@ export function AiChatClient() {
+                                 ? "Failed"
+                                 : node4Response
+                                   ? "Done"
+-                                  : "Pending"}
++                                  : node4Draft
++                                    ? "Needs approval"
++                                    : "Pending"}
+                           </span>
+                         </div>
+                       </div>
+@@ -2255,6 +3168,100 @@ export function AiChatClient() {
+                           <div className="text-sm font-semibold text-red-700">Human review failed</div>
+                           <div className="mt-1 text-xs text-red-700/90 whitespace-pre-wrap">{node4Error}</div>
+                         </div>
++                      ) : node4Draft && !node4Response ? (
++                        <div className="space-y-4">
++                          <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
++                            <div className="flex items-start justify-between gap-4">
++                              <div>
++                                <div className="text-sm font-semibold">Review required</div>
++                                <div className="mt-1 text-xs text-muted-foreground">
++                                  Approve or reject each flagged source column. You can’t proceed until everything is reviewed.
++                                </div>
++                              </div>
++                              <Button type="button" onClick={() => void runNode4HumanReview()} disabled={!node4AllReviewed || node4Mutation.isPending}>
++                                {node4Mutation.isPending ? "Saving..." : "Confirm Review"}
++                              </Button>
++                            </div>
++                            <div className="mt-3 text-xs text-muted-foreground">
++                              Reviewed:{" "}
++                              <span className="font-semibold">
++                                {node4FlaggedGroups.filter((g) => node4Decisions[g.sourceField] != null).length}/{node4FlaggedGroups.length}
++                              </span>
++                            </div>
++                          </div>
++
++                          {node4FlaggedGroups.length ? (
++                            <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
++                              <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">FLAGGED COLUMNS</div>
++                              <div className="mt-4 overflow-auto rounded-2xl border border-border/60 bg-background/60">
++                                <table className="min-w-full text-left text-xs">
++                                  <thead className="bg-muted/20 border-b border-border/60">
++                                    <tr>
++                                      <th className="p-2 font-semibold text-muted-foreground">Source Column</th>
++                                      <th className="p-2 font-semibold text-muted-foreground">Suggested Target</th>
++                                      <th className="p-2 font-semibold text-muted-foreground">Confidence</th>
++                                      <th className="p-2 font-semibold text-muted-foreground">Decision</th>
++                                    </tr>
++                                  </thead>
++                                  <tbody>
++                                    {node4FlaggedGroups.map((g) => {
++                                      const decision = node4Decisions[g.sourceField];
++                                      return (
++                                        <tr key={g.sourceField} className="border-b border-border/60 last:border-0">
++                                          <td className="p-2 font-mono text-[11px] text-muted-foreground">{g.sourceField}</td>
++                                          <td className="p-2">
++                                            <span className="font-mono text-[11px] text-muted-foreground">{g.bestTarget ?? "--"}</span>
++                                            <div className="mt-1 text-[11px] text-muted-foreground">{g.candidates.length} candidates</div>
++                                          </td>
++                                          <td className="p-2">
++                                            {typeof g.bestConfidence === "number" ? `${Math.round(g.bestConfidence * 100)}%` : "--"}
++                                          </td>
++                                          <td className="p-2">
++                                            <div className="flex items-center gap-2">
++                                              <Button
++                                                type="button"
++                                                size="sm"
++                                                variant={decision === true ? "default" : "secondary"}
++                                                onClick={() => setNode4Decisions((p) => ({ ...p, [g.sourceField]: true }))}
++                                              >
++                                                Yes
++                                              </Button>
++                                              <Button
++                                                type="button"
++                                                size="sm"
++                                                variant={decision === false ? "destructive" : "secondary"}
++                                                onClick={() => setNode4Decisions((p) => ({ ...p, [g.sourceField]: false }))}
++                                              >
++                                                No
++                                              </Button>
++                                              {decision == null ? (
++                                                <span className="text-[11px] text-muted-foreground">Pending</span>
++                                              ) : decision ? (
++                                                <span className="text-[11px] text-emerald-700">Approved</span>
++                                              ) : (
++                                                <span className="text-[11px] text-red-700">Rejected</span>
++                                              )}
++                                            </div>
++                                          </td>
++                                        </tr>
++                                      );
++                                    })}
++                                  </tbody>
++                                </table>
++                              </div>
++                            </div>
++                          ) : (
++                            <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
++                              <div className="text-sm font-semibold">No flagged columns</div>
++                              <div className="mt-1 text-xs text-muted-foreground">Confirm review to generate final mappings.</div>
++                              <div className="mt-4">
++                                <Button type="button" onClick={() => void runNode4HumanReview()} disabled={node4Mutation.isPending}>
++                                  {node4Mutation.isPending ? "Saving..." : "Confirm Review"}
++                                </Button>
++                              </div>
++                            </div>
++                          )}
++                        </div>
+                       ) : node4Summary ? (
+                         <div className="space-y-4">
+                           <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
+@@ -2266,13 +3273,29 @@ export function AiChatClient() {
+                                 </div>
+                               </div>
+                               {!node5Response ? (
+-                                <Button
+-                                  type="button"
+-                                  onClick={() => void runNode5Preprocess()}
+-                                  disabled={node4Mutation.isPending || node5Mutation.isPending || node4Summary.failed}
+-                                >
+-                                  {node5Mutation.isPending ? "Running..." : "Confirm"}
+-                                </Button>
++                                <div className="flex items-center gap-2">
++                                  <Button
++                                    type="button"
++                                    size="sm"
++                                    variant={stepDecisions.node5 === true ? "default" : "secondary"}
++                                    onClick={() => {
++                                      setStepDecision("node5", true);
++                                      void runNode5Preprocess();
++                                    }}
++                                    disabled={node4Mutation.isPending || node5Mutation.isPending || node4Summary.failed}
++                                  >
++                                    {node5Mutation.isPending ? "Starting..." : "Yes"}
++                                  </Button>
++                                  <Button
++                                    type="button"
++                                    size="sm"
++                                    variant={stepDecisions.node5 === false ? "destructive" : "secondary"}
++                                    onClick={() => setStepDecision("node5", false)}
++                                    disabled={node4Mutation.isPending || node5Mutation.isPending}
++                                  >
++                                    No
++                                  </Button>
++                                </div>
+                               ) : (
+                                 <span className="rounded-full border px-2.5 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+                                   Done
+@@ -2280,7 +3303,7 @@ export function AiChatClient() {
+                               )}
+                             </div>
+                             <div className="mt-3 text-xs text-muted-foreground">
+-                              Next: {gateNext ?? "—"}
++                              Next: {gateNext?.label ?? "—"}
+                             </div>
+                             {node5Error ? (
+                               <div className="mt-3 text-xs text-red-700/90 whitespace-pre-wrap">{node5Error}</div>
+@@ -2430,13 +3453,29 @@ export function AiChatClient() {
+                               View logs
+                             </Button>
+                             {node5Response && !node5Summary?.failed && !node6Response ? (
+-                              <Button
+-                                type="button"
+-                                onClick={() => void runNode6Resolve({ node5: node5Response, node4: node4Response as Node4HumanReviewResponse })}
+-                                disabled={!node4Response || node6Mutation.isPending}
+-                              >
+-                                {node6Mutation.isPending ? "Starting..." : "Confirm Node 6"}
+-                              </Button>
++                              <div className="flex items-center gap-2">
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node6 === true ? "default" : "secondary"}
++                                  onClick={() => {
++                                    setStepDecision("node6", true);
++                                    void runNode6Resolve({ node5: node5Response, node4: node4Response as Node4HumanReviewResponse });
++                                  }}
++                                  disabled={!node4Response || node6Mutation.isPending}
++                                >
++                                  {node6Mutation.isPending ? "Starting..." : "Yes"}
++                                </Button>
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node6 === false ? "destructive" : "secondary"}
++                                  onClick={() => setStepDecision("node6", false)}
++                                  disabled={node6Mutation.isPending}
++                                >
++                                  No
++                                </Button>
++                              </div>
+                             ) : null}
+                             <span
+                               className={cn(
+@@ -2594,9 +3633,29 @@ export function AiChatClient() {
+                               View logs
+                             </Button>
+                             {node6Response && !node6Summary?.failed && !node7Response ? (
+-                              <Button type="button" onClick={() => void runNode7Verify({ node6: node6Response })} disabled={node7Mutation.isPending}>
+-                                {node7Mutation.isPending ? "Starting..." : "Confirm Node 7"}
+-                              </Button>
++                              <div className="flex items-center gap-2">
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node7 === true ? "default" : "secondary"}
++                                  onClick={() => {
++                                    setStepDecision("node7", true);
++                                    void runNode7Verify({ node6: node6Response });
++                                  }}
++                                  disabled={node7Mutation.isPending}
++                                >
++                                  {node7Mutation.isPending ? "Starting..." : "Yes"}
++                                </Button>
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node7 === false ? "destructive" : "secondary"}
++                                  onClick={() => setStepDecision("node7", false)}
++                                  disabled={node7Mutation.isPending}
++                                >
++                                  No
++                                </Button>
++                              </div>
+                             ) : null}
+                             <span
+                               className={cn(
+@@ -2768,19 +3827,33 @@ export function AiChatClient() {
+                               View logs
+                             </Button>
+                             {node7Response && !node7Summary?.failed && node5Response && node4Response && !node8Response ? (
+-                              <Button
+-                                type="button"
+-                                onClick={() =>
+-                                  void runNode8GenerateOutput({
+-                                    node7: node7Response,
+-                                    node5: node5Response,
+-                                    node4: node4Response as Node4HumanReviewResponse,
+-                                  })
+-                                }
+-                                disabled={node8Mutation.isPending}
+-                              >
+-                                {node8Mutation.isPending ? "Starting..." : "Confirm Node 8"}
+-                              </Button>
++                              <div className="flex items-center gap-2">
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node8 === true ? "default" : "secondary"}
++                                  onClick={() => {
++                                    setStepDecision("node8", true);
++                                    void runNode8GenerateOutput({
++                                      node7: node7Response,
++                                      node5: node5Response,
++                                      node4: node4Response as Node4HumanReviewResponse,
++                                    });
++                                  }}
++                                  disabled={node8Mutation.isPending}
++                                >
++                                  {node8Mutation.isPending ? "Starting..." : "Yes"}
++                                </Button>
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node8 === false ? "destructive" : "secondary"}
++                                  onClick={() => setStepDecision("node8", false)}
++                                  disabled={node8Mutation.isPending}
++                                >
++                                  No
++                                </Button>
++                              </div>
+                             ) : null}
+                             <span
+                               className={cn(
+@@ -2929,9 +4002,29 @@ export function AiChatClient() {
+                               View logs
+                             </Button>
+                             {node8Response && !node8Summary?.failed && !node9Response ? (
+-                              <Button type="button" onClick={() => void runNode9WriteOutput({ node8: node8Response })} disabled={node9Mutation.isPending}>
+-                                {node9Mutation.isPending ? "Starting..." : "Confirm Node 9"}
+-                              </Button>
++                              <div className="flex items-center gap-2">
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node9 === true ? "default" : "secondary"}
++                                  onClick={() => {
++                                    setStepDecision("node9", true);
++                                    void runNode9WriteOutput({ node8: node8Response });
++                                  }}
++                                  disabled={node9Mutation.isPending}
++                                >
++                                  {node9Mutation.isPending ? "Starting..." : "Yes"}
++                                </Button>
++                                <Button
++                                  type="button"
++                                  size="sm"
++                                  variant={stepDecisions.node9 === false ? "destructive" : "secondary"}
++                                  onClick={() => setStepDecision("node9", false)}
++                                  disabled={node9Mutation.isPending}
++                                >
++                                  No
++                                </Button>
++                              </div>
+                             ) : null}
+                             <span
+                               className={cn(
+@@ -3179,6 +4272,33 @@ export function AiChatClient() {
+                     </div>
+                   ) : null}
+                 </div>
++              ) : centerTab === "flow" ? (
++                <div className="mt-6 space-y-4">
++                  <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
++                    <div className="flex items-center gap-3">
++                      <div className="h-10 w-10 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-center">
++                        <Paperclip className="h-5 w-5 text-muted-foreground" />
++                      </div>
++                      <div className="min-w-0">
++                        <div className="text-sm font-semibold truncate">Start a new action</div>
++                        <div className="text-xs text-muted-foreground mt-0.5">
++                          Choose a pinned template on the left or attach a file to begin ingestion.
++                        </div>
++                      </div>
++                    </div>
++                  </div>
++                  <div className="rounded-2xl border border-border/60 bg-background/60 p-5">
++                    <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">FLOW</div>
++                    <div className="mt-3 space-y-2">
++                      {flowNodes.map((n) => (
++                        <div key={n.id} className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                          <div className="text-sm font-semibold">{n.title}</div>
++                          <span className="text-xs text-muted-foreground">{n.status}</span>
++                        </div>
++                      ))}
++                    </div>
++                  </div>
++                </div>
+               ) : (
+                 <div className="mt-6 rounded-2xl border border-border/60 bg-background/60 p-6">
+                   <div className="flex items-center gap-3">
+@@ -3220,10 +4340,10 @@ export function AiChatClient() {
+                           setFileOpen(false);
+                           void ingestWithSemantic(f);
+                         }}
+-                        accept={acceptAny}
++                        accept={acceptUpload}
+                         maxSize={20 * 1024 * 1024}
+                         title="Upload file"
+-                        description="CSV, Excel, PDF, images, etc. (max 20MB)"
++                        description={uploadDescription}
+                         disabled={ingesting}
+                       />
+                       <div className="mt-3 flex items-center justify-end gap-2">
+@@ -3338,9 +4458,57 @@ export function AiChatClient() {
+                   <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+                     <div className="text-xs font-semibold text-muted-foreground tracking-widest">ACTION REQUIRED</div>
+                     <div className="mt-2 text-sm font-semibold">Awaiting confirmation</div>
+-                    <div className="mt-1 text-xs text-muted-foreground">{gateNext}</div>
++                    <div className="mt-1 text-xs text-muted-foreground">{gateNext.label}</div>
++                  </div>
++                ) : null}
++
++                {approvedPanel.approved.length ? (
++                  <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
++                    <div className="text-xs font-semibold text-muted-foreground tracking-widest">APPROVED</div>
++                    <div className="mt-3 grid grid-cols-2 gap-3">
++                      <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                        <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">APPROVED</div>
++                        <div className="mt-1 text-lg font-bold">{approvedPanel.counters.approvedCount}</div>
++                      </div>
++                      <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                        <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">PENDING</div>
++                        <div className="mt-1 text-lg font-bold">{approvedPanel.counters.pendingCount}</div>
++                      </div>
++                      <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                        <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">REJECTED</div>
++                        <div className="mt-1 text-lg font-bold">{approvedPanel.counters.rejectedCount}</div>
++                      </div>
++                      <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2">
++                        <div className="text-[11px] font-semibold text-muted-foreground tracking-widest">AUTO / HUMAN</div>
++                        <div className="mt-1 text-lg font-bold">
++                          {approvedPanel.counters.autoCount ?? "--"} / {approvedPanel.counters.humanCount ?? "--"}
++                        </div>
++                      </div>
++                    </div>
++                    <div className="mt-3 rounded-xl border border-border/60 bg-background/60 max-h-[260px] overflow-auto">
++                      {approvedPanel.approved.slice(0, 60).map((m) => (
++                        <div key={`${m.origin}_${m.source}_${m.target ?? ""}`} className="px-3 py-2 border-b border-border/60 last:border-0">
++                          <div className="flex items-center justify-between gap-3">
++                            <div className="min-w-0">
++                              <div className="font-mono text-[11px] text-muted-foreground truncate">{m.source}</div>
++                              <div className="mt-0.5 text-xs font-semibold truncate">{m.target ?? "--"}</div>
++                            </div>
++                            <div className="text-right shrink-0">
++                              <div className="text-[10px] text-muted-foreground">{m.origin}</div>
++                              <div className="text-[11px] text-muted-foreground">
++                                {typeof m.confidence === "number" ? `${Math.round(m.confidence * 100)}%` : "--"}
++                              </div>
++                            </div>
++                          </div>
++                        </div>
++                      ))}
++                      {approvedPanel.approved.length > 60 ? (
++                        <div className="px-3 py-2 text-xs text-muted-foreground">+{approvedPanel.approved.length - 60} more</div>
++                      ) : null}
++                    </div>
+                   </div>
+                 ) : null}
++
+                 <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
+                   <div className="text-xs font-semibold text-muted-foreground tracking-widest">STATUS</div>
+                   <div className="mt-3 space-y-3">
+@@ -3582,5 +4750,89 @@ export function AiChatClient() {
+         </div>
+       </aside>
+     </div>
++    {mounted && cmmsDialogOpen
++      ? createPortal(
++          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
++            <button
++              type="button"
++              aria-label="Close"
++              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
++              onClick={() => {
++                if (!cmmsTestMutation.isPending) closeCmmsDialog();
++              }}
++            />
++            <div
++              role="dialog"
++              aria-modal="true"
++              className={cn(
++                "relative w-full max-w-lg rounded-xl border bg-card shadow-xl",
++                "animate-in fade-in zoom-in-95 duration-200",
++              )}
++              onMouseDown={(e) => e.stopPropagation()}
++            >
++              <div className="px-5 pt-5">
++                <div className="text-base font-semibold">Connect {cmmsPlatform.toUpperCase()}</div>
++                <div className="mt-1 text-sm text-muted-foreground">Credentials are sent directly to backend for testing.</div>
++              </div>
++              <div className="px-5 pt-4 space-y-3">
++                <div>
++                  <div className="text-xs font-semibold text-muted-foreground tracking-widest">APP KEY</div>
++                  <Input
++                    value={cmmsCreds.app_key}
++                    onChange={(e) => setCmmsCreds((p) => ({ ...p, app_key: e.target.value }))}
++                    placeholder="app_key"
++                    className="mt-2"
++                    autoComplete="off"
++                    disabled={cmmsTestMutation.isPending}
++                  />
++                </div>
++                <div>
++                  <div className="text-xs font-semibold text-muted-foreground tracking-widest">ACCESS KEY</div>
++                  <Input
++                    value={cmmsCreds.access_key}
++                    onChange={(e) => setCmmsCreds((p) => ({ ...p, access_key: e.target.value }))}
++                    placeholder="access_key"
++                    className="mt-2"
++                    autoComplete="off"
++                    disabled={cmmsTestMutation.isPending}
++                  />
++                </div>
++                <div>
++                  <div className="text-xs font-semibold text-muted-foreground tracking-widest">SECRET</div>
++                  <Input
++                    value={cmmsCreds.secret}
++                    onChange={(e) => setCmmsCreds((p) => ({ ...p, secret: e.target.value }))}
++                    placeholder="secret"
++                    className="mt-2"
++                    type="password"
++                    autoComplete="off"
++                    disabled={cmmsTestMutation.isPending}
++                  />
++                </div>
++                {cmmsTestError ? (
++                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-700/90 whitespace-pre-wrap">
++                    {cmmsTestError}
++                  </div>
++                ) : null}
++                {cmmsTestResult ? (
++                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-900 whitespace-pre-wrap max-h-[220px] overflow-auto">
++                    {typeof cmmsTestResult === "string" ? cmmsTestResult : JSON.stringify(cmmsTestResult, null, 2)}
++                  </div>
++                ) : null}
++              </div>
++              <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-4">
++                <Button type="button" variant="secondary" disabled={cmmsTestMutation.isPending} onClick={() => closeCmmsDialog()}>
++                  Close
++                </Button>
++                <Button type="button" disabled={cmmsTestMutation.isPending} onClick={() => void testCmmsConnection()}>
++                  {cmmsTestMutation.isPending ? "Testing..." : "Test Connection"}
++                </Button>
++              </div>
++            </div>
++          </div>,
++          document.body,
++        )
++      : null}
++    </>
+   );
+ }

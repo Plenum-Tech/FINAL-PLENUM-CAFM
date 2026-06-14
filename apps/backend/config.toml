@@ -1,0 +1,44 @@
+# Environment Variables Configuration (TOML format)
+# Replace placeholder values with your actual configuration
+
+# ── API Keys ────────────────────────────────────────────────────────────
+[api_keys]
+anthropic_api_key = "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"
+openai_api_key = "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"
+langsmith_api_key = "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"
+
+# ── Database ────────────────────────────────────────────────────────────
+[database]
+db_url = "postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent"
+db_pool_size = 10
+db_max_overflow = 5
+
+# ── Redis ───────────────────────────────────────────────────────────────
+[redis]
+redis_url = "redis://:password@host:6379/0"
+job_concurrency = 5
+
+# ── Azure Blob Storage ──────────────────────────────────────────────────
+[azure]
+azure_storage_connection_string = "DefaultEndpointsProtocol=https;AccountName=plenumstorage;AccountKey=ud6dsZOvSGPtzKzE0kCm2t+AzD7XFEOb8AjgdI8i8NvRcU1Q05PO1oHN1GskXE0Kc05S+ipU+6vn+AStmfSVjw==;EndpointSuffix=core.windows.net"
+azure_blob_container_name = "plenum-agentic-ai-attachments"
+
+# ── Fiix CMMS Platform Connector ────────────────────────────────────────
+[fiix]
+fiix_enabled = true
+fiix_subdomain = "plenumtechnology"
+fiix_app_key = "macmmsackp384e5a1a6586dadfd4c49eed8d0a83f6ac83924722531e3ac7f0eb1"
+fiix_access_key = "macmmsaakp3845722775b10d6525f8810ddf53fe8a103828dcb09cebbdcc4a152"
+fiix_secret_key = "macmmsaskp384c9f4e4287e2751fe512a3533a28392001b90237d70bea89f6315c81a041f65b6"
+fiix_timeout = 20
+
+# ── Service URLs ────────────────────────────────────────────────────────
+[services]
+svc_ingestion_url = "http://svc-ingestion:8001"
+svc_query_url = "http://svc-query:8002"
+
+# ── Environment & Debug ─────────────────────────────────────────────────
+[environment]
+environment = "development"
+debug = true
+log_level = "INFO"

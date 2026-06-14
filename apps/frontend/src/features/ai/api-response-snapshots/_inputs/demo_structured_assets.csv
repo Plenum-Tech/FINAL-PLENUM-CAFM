@@ -1,0 +1,21 @@
+asset_id,asset_name,site_id,site_name,category,manufacturer,model,serial_number,installed_date,status,sm_priority,notes
+A-1001,Pump A,S-001,Plant 1,Pump,ACME,P-200,SN-001,2023-01-10,Active,High,Leakage observed near seal
+A-1002,Motor B,S-001,Plant 1,Motor,ACME,M-10,SN-002,2022-11-05,Active,Medium,Bearing noise reported
+A-1003,Valve C,S-001,Plant 1,Valve,ValveCo,V-9,SN-003,2021-06-15,Active,Low,Quarterly inspection due
+A-1004,Compressor D,S-002,Plant 2,Compressor,XYZ,C-90,SN-010,2020-03-22,Active,High,Service due in Feb
+A-1005,Generator E,S-002,Plant 2,Generator,GenTech,G-5,SN-011,2019-08-02,Active,Medium,Voltage fluctuations reported
+A-1006,Boiler F,S-003,Warehouse 3,Boiler,HeatPro,H-77,SN-020,2018-12-19,Active,High,Pressure readings irregular
+A-1007,Chiller G,S-003,Warehouse 3,Chiller,CoolInc,CH-12,SN-021,2021-04-08,Active,Medium,Temperature drift
+A-1008,Conveyor H,S-003,Warehouse 3,Conveyor,MoveIt,CV-3,SN-022,2022-09-13,Active,Low,Belt alignment check
+A-1009,Pump A,S-001,Plant 1,Pump,ACME,P-200,SN-001,2023-01-10,Active,High,Duplicate row for dedup demo
+A-1010,Motor I,S-004,Office 4,Motor,ACME,M-11,SN-030,2023-10-01,Active,Low,New installation
+A-1011,HVAC J,S-004,Office 4,HVAC,AirFlow,AF-8,SN-031,2020-07-12,Active,Medium,Filter replacement needed
+A-1012,Elevator K,S-004,Office 4,Elevator,LiftCo,L-2,SN-032,2017-05-20,Active,High,Safety inspection overdue
+A-1013,Panel L,S-002,Plant 2,Electrical,ElectroMax,PM-1,SN-033,2019-02-14,Active,Low,Labeling mismatch
+A-1014,Pump M,S-002,Plant 2,Pump,ACME,P-210,SN-034,2021-11-29,Active,Medium,Minor vibration observed
+A-1015,Motor N,S-003,Warehouse 3,Motor,ACME,M-12,SN-035,2022-01-07,Active,Low,No issues
+A-1016,Sensor O,S-001,Plant 1,Sensor,SenseIt,S-1,SN-036,2024-01-03,Active,Low,Calibration required
+A-1017,PLC P,S-001,Plant 1,Control,ControlWorks,CW-9,SN-037,2018-03-18,Active,Medium,Firmware update pending
+A-1018,Compressor Q,S-002,Plant 2,Compressor,XYZ,C-91,SN-038,2020-09-09,Active,High,Oil leak detected
+A-1019,Valve R,S-003,Warehouse 3,Valve,ValveCo,V-10,SN-039,2021-12-30,Active,Low,Gasket check
+A-1020,Chiller S,S-004,Office 4,Chiller,CoolInc,CH-13,SN-040,2022-06-22,Active,Medium,Noise during startup

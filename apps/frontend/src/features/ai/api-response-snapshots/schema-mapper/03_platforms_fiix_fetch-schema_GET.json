@@ -1,0 +1,228 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:22.245Z",
+  "response": {
+    "status": "ok",
+    "mapper": {
+      "source_system": "Fiix",
+      "canonical_fields": {
+        "serial": "serial",
+        "intChargeDepartmentID": "intChargeDepartmentID",
+        "strBarcode": "strBarcode",
+        "intCountryID": "intCountryID",
+        "strPostalCode": "strPostalCode",
+        "status": "status",
+        "bolIsSite": "bolIsSite",
+        "vendor_code": "vendor_code",
+        "strUuid": "strUuid",
+        "model": "model",
+        "strVendorIds": "strVendorIds",
+        "strStockLocation": "strStockLocation",
+        "task_group_name": "task_group_name",
+        "dblWeightedPrice": "dblWeightedPrice",
+        "dblLastPrice": "dblLastPrice",
+        "address": "address",
+        "strProvince": "strProvince",
+        "intKind": "intKind",
+        "site_id": "site_id",
+        "dtmCreated": "dtmCreated",
+        "wo_description": "wo_description",
+        "intSuperCategorySysCode": "intSuperCategorySysCode",
+        "location_code": "location_code",
+        "strAddressParsed": "strAddressParsed",
+        "category": "category",
+        "qtyStockCount": "qtyStockCount",
+        "strTimezone": "strTimezone",
+        "make": "make",
+        "intAccountID": "intAccountID",
+        "intUpdated": "intUpdated",
+        "city": "city",
+        "strCompletedByUsers": "strCompletedByUsers",
+        "intCompletedByUserID": "intCompletedByUserID",
+        "completed_at": "completed_at",
+        "wo_status": "wo_status",
+        "statusId": "statusId",
+        "strCompletionNotes": "strCompletionNotes",
+        "strAssignedUsers": "strAssignedUsers",
+        "created_at": "created_at",
+        "dtmDateLastModified": "dtmDateLastModified",
+        "sm_type": "sm_type",
+        "sm_priority": "sm_priority",
+        "strAssetIds": "strAssetIds",
+        "bolLocked": "bolLocked",
+        "strCompletedByUserIds": "strCompletedByUserIds",
+        "strAssignedUserIds": "strAssignedUserIds",
+        "strAssets": "strAssets",
+        "bolGroup": "bolGroup",
+        "user_full_name": "user_full_name",
+        "user_name": "user_name",
+        "intLocalizationID": "intLocalizationID",
+        "bolApiApplicationUser": "bolApiApplicationUser",
+        "strBusinessIds": "strBusinessIds",
+        "bolPushNotificationMessages": "bolPushNotificationMessages",
+        "intUserStatusID": "intUserStatusID",
+        "email": "email",
+        "strPreferences": "strPreferences",
+        "intSysCode": "intSysCode",
+        "priority_order": "priority_order",
+        "strUniqueKey": "strUniqueKey",
+        "strColor": "strColor",
+        "strDefaultLabel": "strDefaultLabel",
+        "intStatusControlID": "intStatusControlID",
+        "intControlID": "intControlID",
+        "bolOverrideRules": "bolOverrideRules",
+        "intParentID": "intParentID",
+        "asset_id": "asset_id",
+        "strAisle": "strAisle",
+        "stock_on_hand": "stock_on_hand",
+        "minimum_allowed_stock": "minimum_allowed_stock",
+        "intFacilityID": "intFacilityID",
+        "strBin": "strBin",
+        "strRow": "strRow",
+        "bolDeactivated": "bolDeactivated",
+        "timeZone": "timeZone",
+        "intPrimaryCurrencyID": "intPrimaryCurrencyID",
+        "strPrimaryEmail": "strPrimaryEmail",
+        "countryName": "countryName",
+        "intCreatedByUserID": "intCreatedByUserID"
+      },
+      "vendor_aliases": {
+        "serial": [
+          "strSerialNumber"
+        ],
+        "intChargeDepartmentID": [],
+        "strBarcode": [],
+        "intCountryID": [],
+        "strPostalCode": [],
+        "status": [
+          "bolIsOnline"
+        ],
+        "bolIsSite": [],
+        "vendor_code": [
+          "strCode"
+        ],
+        "strUuid": [],
+        "model": [
+          "strModel"
+        ],
+        "strVendorIds": [],
+        "strStockLocation": [],
+        "task_group_name": [
+          "strName"
+        ],
+        "dblWeightedPrice": [],
+        "dblLastPrice": [],
+        "address": [
+          "strAddress"
+        ],
+        "strProvince": [],
+        "intKind": [],
+        "site_id": [
+          "intSiteID"
+        ],
+        "dtmCreated": [],
+        "wo_description": [
+          "strDescription"
+        ],
+        "intSuperCategorySysCode": [],
+        "location_code": [
+          "intAssetLocationID"
+        ],
+        "strAddressParsed": [],
+        "category": [
+          "intCategoryID"
+        ],
+        "qtyStockCount": [],
+        "strTimezone": [],
+        "make": [
+          "strMake"
+        ],
+        "intAccountID": [],
+        "intUpdated": [],
+        "city": [
+          "strCity"
+        ],
+        "strCompletedByUsers": [],
+        "intCompletedByUserID": [],
+        "completed_at": [
+          "dtmDateCompleted"
+        ],
+        "wo_status": [
+          "intWorkOrderStatusID"
+        ],
+        "statusId": [],
+        "strCompletionNotes": [],
+        "strAssignedUsers": [],
+        "created_at": [
+          "dtmDateCreated"
+        ],
+        "dtmDateLastModified": [],
+        "sm_type": [
+          "intMaintenanceTypeID"
+        ],
+        "sm_priority": [
+          "intPriorityID"
+        ],
+        "strAssetIds": [],
+        "bolLocked": [],
+        "strCompletedByUserIds": [],
+        "strAssignedUserIds": [],
+        "strAssets": [],
+        "bolGroup": [],
+        "user_full_name": [
+          "strFullName"
+        ],
+        "user_name": [
+          "strUserName"
+        ],
+        "intLocalizationID": [],
+        "bolApiApplicationUser": [],
+        "strBusinessIds": [],
+        "bolPushNotificationMessages": [],
+        "intUserStatusID": [],
+        "email": [
+          "strEmailAddress"
+        ],
+        "strPreferences": [],
+        "intSysCode": [],
+        "priority_order": [
+          "intOrder"
+        ],
+        "strUniqueKey": [],
+        "strColor": [],
+        "strDefaultLabel": [],
+        "intStatusControlID": [],
+        "intControlID": [],
+        "bolOverrideRules": [],
+        "intParentID": [],
+        "asset_id": [
+          "intAssetID"
+        ],
+        "strAisle": [],
+        "stock_on_hand": [
+          "qtyOnHand"
+        ],
+        "minimum_allowed_stock": [
+          "qtyMinQty"
+        ],
+        "intFacilityID": [],
+        "strBin": [],
+        "strRow": [],
+        "bolDeactivated": [],
+        "timeZone": [],
+        "intPrimaryCurrencyID": [],
+        "strPrimaryEmail": [],
+        "countryName": [],
+        "intCreatedByUserID": []
+      },
+      "regex_patterns": {},
+      "metadata": {
+        "api_version": "2.3.1",
+        "subdomain": "plenumtechnology",
+        "extracted_at": "2026-04-15T05:38:25Z",
+        "api_calls": 14
+      }
+    },
+    "api_calls": 14
+  }
+}

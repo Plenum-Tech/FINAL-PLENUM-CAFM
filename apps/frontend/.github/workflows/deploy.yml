@@ -1,0 +1,103 @@
+name: Build & Deploy (Azure Container Apps)
+
+on:
+  push:
+    branches: ["dev", "stag", "prod"]
+  workflow_dispatch:
+
+# Use GitHub Environments to isolate secrets per environment (dev/stag/prod)
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    # Map git branch -> GitHub Environment
+    # dev  -> dev
+    # stag -> stag (automatic deploy request)
+    # prod -> prod
+    environment: ${{ github.ref_name }}
+
+    permissions:
+      id-token: write   # for azure/login (federated credentials) if you choose OIDC
+      contents: read
+
+    env:
+      IMAGE_NAME: cafm-web
+      # Docker tags: registry/image:branch-latest and registry/image:sha
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Typecheck
+        run: npm ci && npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Login to Azure (Service Principal)
+        uses: azure/login@v2
+        with:
+          # Store environment-scoped secret 'AZURE_CREDENTIALS' as JSON from a Service Principal
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Docker Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=/backend/connector
+            NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL=/backend/schema-mapper
+            NEXT_PUBLIC_WO_BASE_URL=/backend/work-order
+            NEXT_PUBLIC_DEEP_AGENTS_BASE_URL=/backend/deep-agents
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-latest
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Deploy to Azure Container Apps (creates the app if missing)
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          # Environment-scoped secrets per environment are required for these values
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppName: ${{ secrets.AZURE_CONTAINER_APP_NAME }}
+          # If the Container App doesn't exist, provide 'environment' to create it
+          containerAppEnvironment: ${{ secrets.AZURE_CONTAINERAPPS_ENV }}
+          imageToDeploy: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-latest
+          targetPort: 3000
+          ingress: external
+          registryLoginServer: ${{ secrets.ACR_LOGIN_SERVER }}
+          registryUsername: ${{ secrets.ACR_USERNAME }}
+          registryPassword: ${{ secrets.ACR_PASSWORD }}
+          # Example env vars (add more as needed, keep secrets in the Environment)
+          envVars: |
+            NODE_ENV=production
+            NEXT_TELEMETRY_DISABLED=1
+
+      - name: Post-Deploy - Show App URL
+        run: |
+          echo "Deployed image: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}-latest"
+          echo "Resource Group: ${{ secrets.AZURE_RESOURCE_GROUP }}"
+          echo "Container App:  ${{ secrets.AZURE_CONTAINER_APP_NAME }}"
+

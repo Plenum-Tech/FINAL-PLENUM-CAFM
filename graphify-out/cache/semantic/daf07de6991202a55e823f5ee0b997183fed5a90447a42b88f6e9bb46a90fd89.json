@@ -1,0 +1,1 @@
+{"nodes": [{"id": "tempo_config", "label": "Grafana Tempo Configuration", "file_type": "code", "source_file": "apps/backend/cafm-connector-service-final/config/tempo.yaml", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

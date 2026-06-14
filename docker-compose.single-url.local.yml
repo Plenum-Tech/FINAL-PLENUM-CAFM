@@ -1,0 +1,222 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cafm
+      POSTGRES_PASSWORD: cafm
+      POSTGRES_DB: plenum_cafm
+    volumes:
+      - ./apps/frontend/infra/single-url/postgres-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafm -d plenum_cafm"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  connector-app:
+    build:
+      context: ./apps/backend/cafm-connector-service-final/cafm-connector-service
+      dockerfile: docker/Dockerfile
+    environment:
+      DB_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent?sslmode=require
+      PLENUM_DB_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+      DEBUG: "true"
+      SEED_DEFAULT_PLENUM_ORG: "true"
+    volumes:
+      - ./apps/backend/cafm-connector-service-final/shared-lib:/app/shared-lib
+    command:
+      - bash
+      - -c
+      - "pip install -q -e /app/shared-lib && uvicorn cafm_connector.api.app:app --host 0.0.0.0 --port 8000 --root-path /backend/connector --proxy-headers --forwarded-allow-ips=*"
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  backend-app:
+    build:
+      context: ./apps/backend/cafm-connector-service-final/svc-work-order-management
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent
+      OUTLOOK_USER_EMAIL: shashank@plenum-tech.com
+      # Background Outlook poll for approval replies — off by default (no Graph/OpenAI spam in logs).
+      APPROVAL_EMAIL_POLL_ENABLED: "false"
+      APPROVAL_EMAIL_POLL_INTERVAL_SECONDS: "3600"
+      SEED_APPROVAL_DEMO: "true"
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        echo "Running DB migrations against Azure..."
+        python scripts/migrate_startup.py
+        if [ "$$SEED_APPROVAL_DEMO" = "true" ]; then python scripts/seed_approval_demo.py; fi
+        exec uvicorn src.app:app --host 0.0.0.0 --port 8007 --root-path /backend/work-order
+    ports:
+      - "18080:8007"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  schema-mapper-app:
+    build:
+      context: ./apps/backend/cafm-connector-service-final
+      dockerfile: svc-ai-schema-mapper/Dockerfile
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DB_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent?sslmode=require
+      USE_SQLITE_DEV: "false"
+      PLENUM_CMMS_SCHEMA: plenum_cafm
+      DEBUG: "true"
+      ENVIRONMENT: development
+      LANGSMITH_TRACING: "false"
+    command:
+      - uvicorn
+      - src.app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8003"
+      - --root-path
+      - /backend/schema-mapper
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  svc-udr:
+    build:
+      context: ./apps/backend/cafm-connector-service-final/svc-udr
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DB_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent?sslmode=require
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5-20251001}
+      MAX_QUERY_ROWS: "500"
+      MAX_AGENT_ITERATIONS: "10"
+      DEBUG: "false"
+    command:
+      - uvicorn
+      - src.app:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8006"
+      - --root-path
+      - /backend/udr
+      - --proxy-headers
+      - --forwarded-allow-ips=*
+    expose:
+      - "8006"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  svc-deepagents:
+    build:
+      context: ./apps/backend/cafm-connector-service-final/svc-deepagents
+      dockerfile: Dockerfile
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      DB_URL: postgresql+asyncpg://azure_pg_agentic_ai:Plenum_Tech1@plenum-agentic-ai.postgres.database.azure.com:5432/plenum_agent?sslmode=require
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      # OPENAI_SSL_VERIFY, OPENAI_API_BASE, AZURE_OPENAI_* — apps/backend/.env only
+      # (do not set ${VAR:-} here; empty values override env_file and break the OpenAI client URL)
+      UDR_BASE_URL: http://svc-udr:8006
+      WO_MANAGEMENT_BASE_URL: http://backend-app:8007
+      DOC_RAG_BASE_URL: http://schema-mapper-app:8003
+      MIGRATION_BASE_URL: http://schema-mapper-app:8003
+      PORT: "8008"
+      DEBUG: "false"
+    command:
+      - uvicorn
+      - src.api.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8008"
+      - --root-path
+      - /backend/deep-agents
+      - --proxy-headers
+      - --forwarded-allow-ips=*
+    expose:
+      - "8008"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      svc-udr:
+        condition: service_started
+      backend-app:
+        condition: service_started
+      schema-mapper-app:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend-app:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /backend/connector
+        NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL: /backend/schema-mapper
+        NEXT_PUBLIC_WO_BASE_URL: /backend/work-order
+        NEXT_PUBLIC_DEEP_AGENTS_BASE_URL: /backend/deep-agents
+        NEXT_PUBLIC_ORGANIZATION_ID: ""
+    env_file:
+      - ./apps/frontend/.env.local
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: /backend/connector
+      NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL: /backend/schema-mapper
+      NEXT_PUBLIC_WO_BASE_URL: /backend/work-order
+      NEXT_PUBLIC_DEEP_AGENTS_BASE_URL: /backend/deep-agents
+      NEXT_PUBLIC_ORGANIZATION_ID: ""
+      # Server-side wo-chat route (Node fetch) — browser still uses /backend/work-order via nginx
+      WO_API_SERVER_URL: http://backend-app:8007
+    expose:
+      - "3000"
+    depends_on:
+      - backend-app
+    restart: unless-stopped
+
+  gateway-app:
+    build:
+      context: ./apps/frontend/infra/single-url
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "3000:8080"
+    depends_on:
+      - frontend-app
+      - backend-app
+      - schema-mapper-app
+      - connector-app
+      - svc-udr
+      - svc-deepagents
+    restart: unless-stopped

@@ -1,0 +1,105 @@
+# Single-app image (Azure default):
+# - Next.js standalone on 3000
+# - Nginx on 80: / -> Next, /backend/{connector,schema-mapper,doc-rag,work-order} -> local uvicorn
+#
+# Build from monorepo root:
+#   docker build -f Dockerfile.single-app -t cafm-single:latest .
+
+FROM node:20-bookworm-slim AS frontend-builder
+WORKDIR /app/frontend
+
+ARG NEXT_PUBLIC_API_BASE_URL=/backend/connector
+ARG NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL=/backend/schema-mapper
+ARG NEXT_PUBLIC_WO_BASE_URL=/backend/work-order
+ARG NEXT_PUBLIC_DEEP_AGENTS_BASE_URL=/backend/deep-agents
+ARG NEXT_PUBLIC_ORGANIZATION_ID=
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+ENV NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL=${NEXT_PUBLIC_SCHEMA_MAPPER_BASE_URL}
+ENV NEXT_PUBLIC_WO_BASE_URL=${NEXT_PUBLIC_WO_BASE_URL}
+ENV NEXT_PUBLIC_DEEP_AGENTS_BASE_URL=${NEXT_PUBLIC_DEEP_AGENTS_BASE_URL}
+ENV NEXT_PUBLIC_ORGANIZATION_ID=${NEXT_PUBLIC_ORGANIZATION_ID}
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY apps/frontend/package.json apps/frontend/package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci --include=dev; else npm install; fi
+
+COPY apps/frontend/ ./
+RUN mkdir -p public
+RUN npm run build
+
+
+FROM python:3.12-slim-bookworm AS runtime
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends \
+    nodejs nginx supervisor gcc libpq-dev tesseract-ocr poppler-utils libjpeg-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /var/log/supervisor /run/nginx
+
+WORKDIR /build
+
+# ── cafm-connector-service ───────────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/cafm-connector-service/pyproject.toml cafm-connector-service/
+COPY apps/backend/cafm-connector-service-final/cafm-connector-service/src cafm-connector-service/src/
+RUN pip install --no-cache-dir --break-system-packages -e "cafm-connector-service[all]"
+
+# ── shared-lib ───────────────────────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/shared-lib shared-lib/
+RUN pip install --no-cache-dir --break-system-packages -e "shared-lib"
+
+# ── doc-rag (install BEFORE schema-mapper: doc-rag pins older FastAPI; mapper must win) ──
+COPY apps/backend/cafm-connector-service-final/doc-rag-main/requirements.txt doc-rag-main/
+RUN pip install --no-cache-dir --break-system-packages -r "doc-rag-main/requirements.txt"
+COPY apps/backend/cafm-connector-service-final/doc-rag-main doc-rag-main/
+RUN ln -sfn /build/doc-rag-main /app/doc_rag
+
+# ── svc-ai-schema-mapper ─────────────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/svc-ai-schema-mapper/pyproject.toml svc-ai-schema-mapper/
+COPY apps/backend/cafm-connector-service-final/svc-ai-schema-mapper/src svc-ai-schema-mapper/src/
+COPY apps/backend/cafm-connector-service-final/svc-ai-schema-mapper/alembic svc-ai-schema-mapper/alembic/
+COPY apps/backend/cafm-connector-service-final/svc-ai-schema-mapper/alembic.ini svc-ai-schema-mapper/
+RUN pip install --no-cache-dir --break-system-packages -e "svc-ai-schema-mapper"
+
+# ── svc-work-order-management ───────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/svc-work-order-management/requirements.txt svc-work-order-management/
+RUN pip install --no-cache-dir --break-system-packages -r "svc-work-order-management/requirements.txt"
+COPY apps/backend/cafm-connector-service-final/svc-work-order-management/src svc-work-order-management/src/
+
+# ── svc-udr ──────────────────────────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/svc-udr/pyproject.toml svc-udr/
+COPY apps/backend/cafm-connector-service-final/svc-udr/src svc-udr/src/
+RUN pip install --no-cache-dir --break-system-packages -e "svc-udr"
+
+# ── svc-deepagents ───────────────────────────────────────────────────────────
+COPY apps/backend/cafm-connector-service-final/svc-deepagents/pyproject.toml svc-deepagents/
+COPY apps/backend/cafm-connector-service-final/svc-deepagents/src svc-deepagents/src/
+RUN pip install --no-cache-dir --break-system-packages -e "svc-deepagents"
+
+# doc-rag / work-order / deepagents wheels can downgrade shared deps — restore connector + schema-mapper stacks
+WORKDIR /build
+RUN pip install --no-cache-dir --break-system-packages -e "cafm-connector-service[all]" \
+    && pip install --no-cache-dir --break-system-packages -e "svc-ai-schema-mapper"
+
+# ── Frontend standalone ─────────────────────────────────────────────────────
+WORKDIR /app
+COPY --from=frontend-builder /app/frontend/public /app/frontend/public
+COPY --from=frontend-builder /app/frontend/.next/standalone /app/frontend
+COPY --from=frontend-builder /app/frontend/.next/static /app/frontend/.next/static
+
+# ── Nginx + supervisord ──────────────────────────────────────────────────────
+COPY infra/single-app/nginx.conf /etc/nginx/nginx.conf
+COPY infra/single-app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+ENV NODE_ENV=production \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+EXPOSE 80
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

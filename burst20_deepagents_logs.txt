@@ -1,0 +1,196 @@
+svc-deepagents-1  | {"method": "GET", "path": "/backend/deep-agents/health", "status": 200, "elapsed_ms": 129, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:49:28.129752Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "GET /backend/deep-agents/health HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-1-1623178563", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:10.342295Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-1-1623178563", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:10.380636Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-2-1797379726", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:10.424360Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-2-1797379726", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:10.428512Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-1-1623178563", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:12.973693Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 20822, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:12.979480Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | {"session_id": "burst-pdf-2-1797379726", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:12.990055Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 20046, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:12.990584Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-3-1132843730", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:13.312235Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-3-1132843730", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:13.312672Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-4-1701772736", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:13.316170Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-4-1701772736", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:13.316551Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-3-1132843730", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:15.018145Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 22066, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:15.019819Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | {"session_id": "burst-pdf-4-1701772736", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:15.023797Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 22048, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:15.024713Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-5-2131589917", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:16.241869Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-5-2131589917", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:16.244748Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-6-376036306", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:50:16.249854Z"}
+svc-deepagents-1  | {"session_id": "burst-pdf-6-376036306", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:50:16.250682Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst-pdf-6-376036306", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:17.964802Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 24640, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:17.965375Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | {"session_id": "burst-pdf-5-2131589917", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:50:17.967428Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 24825, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:50:17.969070Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-1-1589514648", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:05.535887Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-1-1589514648", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:05.538680Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-1-1589514648", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:07.078570Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 5616, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:07.080098Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-2-1230344942", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:25.818055Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-2-1230344942", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:25.822217Z"}
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-3-778757828", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:25.835688Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-3-778757828", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:25.835981Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-2-1230344942", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:28.568907Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 26788, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:28.570669Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-3-778757828", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:28.734391Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 26750, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:28.735338Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-4-1543076466", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:32.440412Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-4-1543076466", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:32.440744Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-4-1543076466", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:34.896697Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 32684, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:34.897831Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | {"session_id": "burst20-pdf-5-946316577", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:35.842701Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-5-946316577", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:35.843201Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-5-946316577", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:37.721539Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 35281, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:37.722784Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-6-1606762959", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:42.140620Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-6-1606762959", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:42.140948Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-7-1572811285", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:42.142582Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-7-1572811285", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:42.143005Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-6-1606762959", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:43.989389Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 41337, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:43.992849Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-7-1572811285", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:44.037575Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 41137, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:44.039734Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-8-112673956", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:45.879175Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-8-112673956", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:45.879384Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-8-112673956", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:47.869749Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 44748, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:47.870343Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-9-2142269804", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:49.218886Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-9-2142269804", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:49.219295Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-9-2142269804", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:51.801922Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 48454, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:51.806488Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-10-731851782", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:52.186969Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-10-731851782", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:52.187370Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-10-731851782", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:54.707202Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 51095, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:54.707911Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-11-799464302", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:55.457014Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-11-799464302", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:55.457270Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-11-799464302", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:52:58.098052Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 54248, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:52:58.099042Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-12-1128258830", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:52:58.702012Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-12-1128258830", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:52:58.702429Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-12-1128258830", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:00.782009Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 56724, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:00.785630Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/doc-rag/documents/upload "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-13-1050529226", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:02.259026Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-13-1050529226", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:02.259594Z"}
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:04.845748Z"}
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:05.068329Z"}
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:05.321996Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-14-1991082277", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:05.347723Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-14-1991082277", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:05.347948Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-13-1050529226", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:05.556562Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 61267, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:05.558816Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:05.595406Z"}
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:05.845222Z"}
+svc-deepagents-1  | {"service": "doc_rag", "error": "ReadTimeout", "attempt": 1, "event": "http_client.transport_error", "level": "warning", "timestamp": "2026-06-02T09:53:06.167871Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-14-1991082277", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:06.867668Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 62323, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:06.869323Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.584839Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-15-1907446408", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.585320Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-15-1907446408", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.585726Z"}
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.588121Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-16-1152812628", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.589941Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-16-1152812628", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.590700Z"}
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.594937Z"}
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | HTTP Request: POST http://schema-mapper-app:8003/documents/upload "HTTP/1.1 404 Not Found"
+svc-deepagents-1  | {"session_id": "burst20-pdf-17-531403783", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.598353Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-17-531403783", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.598732Z"}
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.601286Z"}
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.601485Z"}
+svc-deepagents-1  | {"error": "", "event": "doc_rag.index.error", "level": "error", "timestamp": "2026-06-02T09:53:15.601560Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-18-1036897737", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.602090Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-18-1036897737", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.602384Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-19-444024337", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.603508Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-19-444024337", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.603779Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-20-861696871", "structured": 0, "documents": 1, "skipped": 0, "event": "single_door.sequence.done", "level": "info", "timestamp": "2026-06-02T09:53:15.604542Z"}
+svc-deepagents-1  | {"session_id": "burst20-pdf-20-861696871", "event": "orchestrator.run_stateful.start", "level": "info", "timestamp": "2026-06-02T09:53:15.604755Z"}
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-19-444024337", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:17.991380Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 72166, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:17.992759Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-17-531403783", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:18.063301Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 72759, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:18.065747Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-20-861696871", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:18.198469Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 72056, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:18.198934Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-16-1152812628", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:18.203913Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 73152, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:18.204932Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-15-1907446408", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:18.269964Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 73453, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:18.273284Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK
+svc-deepagents-1  | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+svc-deepagents-1  | {"session_id": "burst20-pdf-18-1036897737", "interrupted": false, "tool_call_count": 0, "event": "orchestrator.invoke.done", "level": "info", "timestamp": "2026-06-02T09:53:18.484762Z"}
+svc-deepagents-1  | {"method": "POST", "path": "/backend/deep-agents/api/workflow/run-stateful-with-files", "status": 200, "elapsed_ms": 72919, "event": "http.request", "level": "info", "timestamp": "2026-06-02T09:53:18.486485Z"}
+svc-deepagents-1  | INFO:     172.19.0.1:0 - "POST /backend/deep-agents/api/workflow/run-stateful-with-files HTTP/1.1" 200 OK

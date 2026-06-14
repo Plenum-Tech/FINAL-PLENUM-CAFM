@@ -1,0 +1,101 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 546 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(Maintenance Report – January 2024) Tj
+0 0 Td
+72 744 Td
+(Asset Register Summary) Tj
+0 0 Td
+72 728 Td
+(Plant 1:) Tj
+0 0 Td
+72 712 Td
+(- Pump A \(SN-001\) installed 10 Jan 2023. Frequent leakage observed.) Tj
+0 0 Td
+72 696 Td
+(- Motor B \(SN-002\) noise issue, possible bearing wear.) Tj
+0 0 Td
+72 680 Td
+(Plant 2:) Tj
+0 0 Td
+72 664 Td
+(- Compressor C \(SN-010\) service due in Feb. Oil leak suspected.) Tj
+0 0 Td
+72 648 Td
+(Notes:) Tj
+0 0 Td
+72 632 Td
+(- Some records are free-text and not in tabular format.) Tj
+0 0 Td
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 557 >>
+stream
+BT
+/F1 12 Tf
+72 760 Td
+(Work Order Summary) Tj
+0 0 Td
+72 744 Td
+(WO-9001 for Pump A: PRIORITY HIGH, due 05 Jan, technician Ali) Tj
+0 0 Td
+72 728 Td
+(WO-9002 for Motor B: PRIORITY MED, due 06 Jan, technician Sara) Tj
+0 0 Td
+72 712 Td
+(WO-9003 for Compressor C: PRIORITY HIGH, due 01 Feb, technician Omar) Tj
+0 0 Td
+72 696 Td
+(Remarks:) Tj
+0 0 Td
+72 680 Td
+(- Replace seal on Pump A) Tj
+0 0 Td
+72 664 Td
+(- Check bearing on Motor B) Tj
+0 0 Td
+72 648 Td
+(- Investigate oil leak on Compressor C) Tj
+0 0 Td
+72 632 Td
+(Sign-off: ____________________) Tj
+0 0 Td
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 3 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [ 4 0 R 5 0 R ] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000000676 00000 n 
+0000001284 00000 n 
+0000001410 00000 n 
+0000001536 00000 n 
+0000001601 00000 n 
+trailer
+<< /Size 8 /Root 7 0 R >>
+startxref
+1650
+%%EOF

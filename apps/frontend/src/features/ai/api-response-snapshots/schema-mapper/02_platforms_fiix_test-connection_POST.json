@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "capturedAt": "2026-04-15T05:38:22.171Z",
+  "error": {
+    "message": "Method Not Allowed",
+    "status": 405,
+    "payload": {
+      "detail": "Method Not Allowed"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:28.262Z",
+  "baseUrl": "https://cafm.gentlesmoke-fd81e91e.uaenorth.azurecontainerapps.io",
+  "organizationId": "00000000-0000-0000-0000-000000000001",
+  "note": "Each file contains either { ok: true, response } or { ok: false, error }."
+}

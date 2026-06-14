@@ -1,0 +1,70 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:27.993Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "json_generated": true,
+    "csv_generated": true,
+    "sql_generated": true,
+    "report_generated": false,
+    "output_json_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.json",
+    "output_csv_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "output_sql_url": "/api/testing/artifacts/ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "migration_report_url": null,
+    "intermediate_schema": {
+      "ingestion_id": "7cedb5ea-8c96-44f9-8903-814b2c690cf3",
+      "source_type": "csv",
+      "agent_id": "schema-mapper",
+      "source_filename": "migration_output.csv",
+      "extracted_at": "2026-04-15T05:38:28.057389",
+      "extraction_method": "deterministic_mapper",
+      "model_used": "claude-haiku-4-5",
+      "entities": {
+        "data": [
+          {
+            "asset_id": "1",
+            "asset_name": "Pump A",
+            "location": "Plant 1",
+            "category": "Pump",
+            "manufacturer": "ACME",
+            "model": "PA-100",
+            "serial_number": "SN-001",
+            "installed_date": "2024-01-15"
+          },
+          {
+            "asset_id": "2",
+            "asset_name": "Motor B",
+            "location": "Plant 1",
+            "category": "Motor",
+            "manufacturer": "ACME",
+            "model": "MB-200",
+            "serial_number": "SN-002",
+            "installed_date": "2024-02-10"
+          }
+        ]
+      },
+      "confidence": {
+        "overall": "high",
+        "eval_score": 0.95,
+        "rules_passed": true
+      }
+    },
+    "intermediate_schema_valid": true,
+    "schema_validation_errors": [],
+    "el_m8_passed": true,
+    "error_message": null,
+    "duration_ms": 2.2,
+    "execution_logs": [
+      "[Node 8] Output generation: migration=ae5e7477-1f30-42a9-90c0-893b0be68072",
+      "[Node 8] Input: 1 tables, 0 relationships",
+      "[Node 8] ✅ JSON generated: 13 bytes",
+      "[Node 8] ✅ CSV generated: 1 bytes",
+      "[Node 8] ✅ SQL generated: 726 bytes",
+      "[Node 8] ⚠️ PDF generation failed: 'FinalMapping' object has no attribute 'get'",
+      "[Node 8] JSON saved to /tmp/cmms_migration_ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.json",
+      "[Node 8] CSV saved to /tmp/cmms_migration_ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.csv",
+      "[Node 8] SQL saved to /tmp/cmms_migration_ae5e7477-1f30-42a9-90c0-893b0be68072/ae5e7477-1f30-42a9-90c0-893b0be68072_output.sql",
+      "[Node 8] All artifacts generated successfully"
+    ]
+  }
+}

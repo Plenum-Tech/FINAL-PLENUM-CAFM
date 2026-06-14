@@ -1,0 +1,10 @@
+- POST /schema-mapper/api/testing/unstructured/parse
+- POST /schema-mapper/api/testing/unstructured/extract
+- POST /schema-mapper/api/testing/unstructured/build-schema
+- GET /schema-mapper/api/testing/unstructured/jobs/{job_id}
+
+- (optional polling)
+- POST /schema-mapper/api/testing/detect-data-mode
+- POST /schema-mapper/api/testing/set-data-mode (optional)
+- POST /schema-mapper/api/testing/db/execute
+- GET /schema-mapper/api/testing/db/schema (optional)

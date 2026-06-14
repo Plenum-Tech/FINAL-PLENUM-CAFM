@@ -1,0 +1,31 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:28.099Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "handoff_complete": true,
+    "handoff_status": "queued",
+    "ingestion_service_url": "http://svc-ingestion:8001",
+    "ingestion_status": "queued",
+    "write_review_payload": {
+      "summary": {
+        "source_type": "csv",
+        "source_filename": "export.csv",
+        "overall_confidence": 0.92,
+        "total_entities": 150,
+        "entity_counts": {
+          "assets": 60,
+          "work_orders": 74,
+          "parts": 16
+        }
+      }
+    },
+    "el_m9_passed": true,
+    "error_message": null,
+    "duration_ms": 0.3,
+    "execution_logs": [
+      "[Node 9] Final write/handoff: migration=ae5e7477-1f30-42a9-90c0-893b0be68072",
+      "[Node 9] Customer approved - handing off to svc-ingestion"
+    ]
+  }
+}

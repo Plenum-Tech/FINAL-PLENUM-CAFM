@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:27.607Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "cleaned_tables": {
+      "data": [
+        {
+          "asset_id": "1",
+          "asset_name": "Pump A",
+          "location": "Plant 1",
+          "category": "Pump",
+          "manufacturer": "ACME",
+          "model": "PA-100",
+          "serial_number": "SN-001",
+          "installed_date": "2024-01-15"
+        },
+        {
+          "asset_id": "2",
+          "asset_name": "Motor B",
+          "location": "Plant 1",
+          "category": "Motor",
+          "manufacturer": "ACME",
+          "model": "MB-200",
+          "serial_number": "SN-002",
+          "installed_date": "2024-02-10"
+        }
+      ]
+    },
+    "total_original_rows": 2,
+    "total_rows_post_dedup": 2,
+    "total_dedup_drop_count": 0,
+    "overall_dedup_ratio": 1,
+    "table_metrics": [
+      {
+        "table_name": "data",
+        "original_row_count": 2,
+        "dedup_drop_count": 0,
+        "post_dedup_row_count": 2,
+        "dedup_ratio": 1,
+        "null_fills_applied": 0,
+        "date_coercions": 1,
+        "validation_warnings": []
+      }
+    ],
+    "data_quality_warnings": [],
+    "detected_fk_columns": {},
+    "el_m5_passed": true,
+    "error_message": null,
+    "duration_ms": 8.7,
+    "execution_logs": [
+      "[Node 5] Preprocessing: migration=ae5e7477-1f30-42a9-90c0-893b0be68072, tables=1, final_mappings=5",
+      "[Node 5] Processing 'data': 2 rows",
+      "[Node 5] Coerced installed_date to ISO 8601",
+      "[Node 5] Potential FK columns in data: ['asset_id', 'serial_number']",
+      "[Node 5] Table 'data' cleaned: 2 rows",
+      "[Node 5] Overall dedup ratio: 100.0%",
+      "[Node 5] EL-M.5 PASSED: 100.0% ≥ 0.80"
+    ]
+  }
+}

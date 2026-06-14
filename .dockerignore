@@ -1,0 +1,16 @@
+.git
+.claude
+**/.git
+**/.claude
+**/.next
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/*.pyc
+**/*.pyo
+**/*.log
+assets
+agent-transcripts

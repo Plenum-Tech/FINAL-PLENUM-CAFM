@@ -1,0 +1,18 @@
+# Node / Next.js build artifacts
+.next
+node_modules
+npm-debug.log
+yarn-error.log
+.pnpm-store
+.turbo
+.env*
+!.env.example
+
+# VCS
+.git
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+

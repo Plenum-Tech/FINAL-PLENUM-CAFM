@@ -1,0 +1,51 @@
+{
+  "name": "cafm-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "node -e \"require('node:fs').rmSync('.next',{recursive:true,force:true,maxRetries:10,retryDelay:50})\" && tsc --noEmit",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tanstack/react-query": "^5.87.1",
+    "ag-grid-community": "^35.1.0",
+    "ag-grid-react": "^35.1.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dnd-multi-backend": "^9.0.0",
+    "lucide-react": "^0.577.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dnd-multi-backend": "^9.0.0",
+    "react-dnd-touch-backend": "^16.0.1",
+    "react-dom": "^19.2.4",
+    "react-qr-code": "^2.0.18",
+    "socket.io-client": "^4.8.3",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.1.6",
+    "eslint-config-prettier": "^10.1.8",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3"
+  }
+}

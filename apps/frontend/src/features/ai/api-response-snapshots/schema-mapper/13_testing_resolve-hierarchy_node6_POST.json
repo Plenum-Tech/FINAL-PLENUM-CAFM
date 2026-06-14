@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:27.691Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "fk_candidates_count": 0,
+    "confirmed_fks_count": 0,
+    "hierarchy_cycles_count": 0,
+    "implicit_hierarchies_count": 1,
+    "self_referencing_trees_count": 0,
+    "fk_candidates": [],
+    "confirmed_hierarchies": [],
+    "hierarchy_cycles": [],
+    "implicit_hierarchies": {
+      "data.serial_number": {
+        "separator": "-",
+        "levels": 2,
+        "examples": [
+          "SN-001",
+          "SN-002"
+        ],
+        "confidence": 1
+      }
+    },
+    "containment_hierarchy": {},
+    "el_m6_passed": true,
+    "error_message": null,
+    "duration_ms": 1.3,
+    "execution_logs": [
+      "[Node 6] Hierarchy resolution: migration=ae5e7477-1f30-42a9-90c0-893b0be68072, tables=1",
+      "[Node 6] Scanned: 0 FK candidates",
+      "[Node 6] Validated: 0 confirmed FKs",
+      "[Node 6] Detected: 1 implicit hierarchies",
+      "[Node 6] Found: 0 cycles",
+      "[Node 6] EL-M.6 PASSED: No cycles in hierarchy"
+    ]
+  }
+}

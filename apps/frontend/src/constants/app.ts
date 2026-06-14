@@ -1,0 +1,26 @@
+export const APP_ROUTES = {
+  home: "/",
+  login: "/login",
+  logout: "/logout",
+  dashboard: "/dashboard",
+  assets: "/assets",
+  locations: "/locations",
+  workOrders: "/work-orders",
+  /** Redirects to orchestrator WO space (`/ai?space=work_orders`). */
+  workOrdersNew: "/work-orders/new",
+  workOrdersList: "/work-orders/list",
+  workOrderCommandCenter: "/work-orders/command-center",
+  workOrderEmailInbox: "/work-orders/email-inbox",
+  preventiveMaintenance: "/preventive-maintenance",
+  import: "/import",
+  templates: "/templates",
+  vendors: "/vendors",
+  users: "/users",
+  technicians: "/technicians",
+  manpower: "/manpower",
+  assetCategories: "/asset-categories",
+  ai: "/ai",
+  /** @deprecated Use APP_ROUTES.ai — orchestrator is the /ai page */
+  aiOrchestrator: "/ai",
+  organizations: "/organizations",
+} as const;

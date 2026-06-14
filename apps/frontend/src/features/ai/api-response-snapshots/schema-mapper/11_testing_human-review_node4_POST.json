@@ -1,0 +1,69 @@
+{
+  "ok": true,
+  "capturedAt": "2026-04-15T05:38:27.523Z",
+  "response": {
+    "migration_id": "ae5e7477-1f30-42a9-90c0-893b0be68072",
+    "total_source_fields": 8,
+    "final_mappings": [
+      {
+        "source_field": "asset_id",
+        "target_field": "asset_id",
+        "confidence": 0.99,
+        "approval_status": "auto_approved",
+        "source": "T1"
+      },
+      {
+        "source_field": "asset_name",
+        "target_field": "asset_name",
+        "confidence": 0.99,
+        "approval_status": "auto_approved",
+        "source": "T1"
+      },
+      {
+        "source_field": "manufacturer",
+        "target_field": "manufacturer",
+        "confidence": 0.99,
+        "approval_status": "auto_approved",
+        "source": "T1"
+      },
+      {
+        "source_field": "model",
+        "target_field": "model",
+        "confidence": 0.99,
+        "approval_status": "auto_approved",
+        "source": "T1"
+      },
+      {
+        "source_field": "serial_number",
+        "target_field": "serial_number",
+        "confidence": 0.99,
+        "approval_status": "auto_approved",
+        "source": "T1"
+      }
+    ],
+    "intentionally_unmapped": [],
+    "tier2_flagged_mappings": [],
+    "tier2_unmappable_count": 3,
+    "mapping_stats": {
+      "auto_approved": 5,
+      "human_approved": 0,
+      "custom_added": 0,
+      "intentionally_unmapped": 0,
+      "overall_confidence": 0.99,
+      "unmappable_count": 3
+    },
+    "el_m4_passed": true,
+    "error_message": null,
+    "duration_ms": 0.9,
+    "execution_logs": [
+      "[Node 4] Endpoint started for migration ae5e7477-1f30-42a9-90c0-893b0be68072",
+      "[Node 4] Human review: migration=ae5e7477-1f30-42a9-90c0-893b0be68072, tier1=5, tier2_flagged=0, tier2_unmappable=3, total_source=8, custom=0",
+      "[Node 4] T1 auto: asset_id → asset_id",
+      "[Node 4] T1 auto: asset_name → asset_name",
+      "[Node 4] T1 auto: manufacturer → manufacturer",
+      "[Node 4] T1 auto: model → model",
+      "[Node 4] T1 auto: serial_number → serial_number",
+      "[Node 4] EL-M.4 PASSED: 5 mappings validated"
+    ]
+  }
+}
